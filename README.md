@@ -1,131 +1,142 @@
 # 24/7 Live Camera Stream
 
-A dual-mode camera streaming application that works both as a static GitHub Pages site (using WebRTC for browser camera access) and with a Python backend for USB camera streaming via ngrok.
+A Raspberry Pi USB camera streaming application that streams video to a static GitHub Pages website via ngrok tunnel.
 
 ## Features
 
-### 🎥 Dual Streaming Modes
-
-#### 1. Browser Camera Mode (WebRTC)
-- Direct browser camera access using WebRTC
-- No backend required - works immediately on GitHub Pages
-- Real-time FPS calculation
-- Quality selection (HD/SD/UHD)
-- Works on any device with a camera
-
-#### 2. Backend Server Mode
-- Connect to Python Flask backend running locally
-- Support for USB cameras via OpenCV
-- ngrok tunnel support for remote access
-- MJPEG streaming with quality control
+### 🎥 Raspberry Pi Camera Streaming
+- USB camera support via OpenCV
+- MJPEG streaming with quality control (SD/HD/UHD)
 - Real-time stats from server
+- ngrok tunnel support for remote access
+- Auto-reconnect when connection drops
+- Persistent connection settings
 
 ### 🌐 GitHub Pages Deployment
 
 Live at: `https://kadelj61-oss.github.io/24-7-/`
 
-The site is automatically deployed to GitHub Pages using GitHub Actions. The dual-mode design allows the site to work immediately with browser cameras, while also supporting backend connections via ngrok.
+The website connects to your Raspberry Pi backend via ngrok, allowing you to stream your USB camera from anywhere.
+
+## Architecture
+
+```
+┌─────────────────┐         ┌──────────────┐         ┌─────────────────┐
+│  Raspberry Pi   │ ◄─────► │    ngrok     │ ◄─────► │  GitHub Pages   │
+│  + USB Camera   │         │   Tunnel     │         │    Website      │
+│  + Python Flask │         └──────────────┘         └─────────────────┘
+└─────────────────┘
+```
 
 ## Quick Start
 
-### Scenario A: Browser Camera (No Setup Required)
+### Hardware Requirements
+- Raspberry Pi (3B+ or newer recommended)
+- USB Camera
+- Internet connection
+- Power supply
 
-1. Visit `https://kadelj61-oss.github.io/24-7-/`
-2. Click "Browser Camera" mode (default)
-3. Allow camera permissions when prompted
-4. ✅ Live stream starts immediately
+### Software Setup
 
-### Scenario B: Backend Server with ngrok
-
-1. **Clone and Setup Repository:**
+1. **Clone Repository on Raspberry Pi:**
    ```bash
    git clone https://github.com/kadelj61-oss/24-7-.git
    cd 24-7-
-   pip install -r requirements.txt
    ```
 
-2. **Start Python Backend:**
+2. **Install System Dependencies:**
    ```bash
-   python main.py
+   sudo apt-get update
+   sudo apt-get install python3-pip python3-opencv
+   ```
+
+3. **Install Python Dependencies:**
+   ```bash
+   pip3 install -r requirements.txt
+   ```
+
+4. **Install ngrok:**
+   ```bash
+   # For ARM (Raspberry Pi)
+   wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-arm.tgz
+   tar -xvzf ngrok-v3-stable-linux-arm.tgz
+   sudo mv ngrok /usr/local/bin/
+   
+   # Sign up at https://ngrok.com and get your authtoken
+   ngrok config add-authtoken YOUR_AUTHTOKEN
+   ```
+
+5. **Connect USB Camera:**
+   - Plug USB camera into Raspberry Pi
+   - Verify camera is detected:
+     ```bash
+     ls /dev/video*
+     # Should show /dev/video0 or similar
+     ```
+
+6. **Start the Backend Server:**
+   ```bash
+   python3 main.py
    ```
    The server will start on `http://localhost:8080`
 
-3. **Setup ngrok Tunnel:**
+7. **Start ngrok Tunnel (in another terminal):**
    ```bash
-   # Install ngrok: https://ngrok.com/download
    ngrok http 8080
    ```
    Copy the ngrok URL (e.g., `https://abc123.ngrok.io`)
 
-4. **Connect from GitHub Pages:**
+8. **Connect from GitHub Pages:**
    - Visit `https://kadelj61-oss.github.io/24-7-/`
-   - Click "Backend Server" mode
-   - Paste your ngrok URL
+   - Paste your ngrok URL in the "Backend URL" field
    - Click "Connect"
-   - ✅ Stream from your USB camera!
+   - ✅ Your camera stream is now live!
 
-## Backend CORS Configuration
+## Configuration
 
-For the backend to work with GitHub Pages, you need to enable CORS. The Python backend should include:
+### Camera Settings
+Edit `config/config.yaml` to configure camera settings:
+- Resolution
+- Frame rate
+- Quality presets (SD/HD/UHD)
+- Buffer size
 
-```python
-from flask_cors import CORS
-
-app = Flask(__name__)
-CORS(app, resources={
-    r"/*": {
-        "origins": [
-            "https://kadelj61-oss.github.io",
-            "http://localhost:*",
-            "https://*.ngrok.io"
-        ]
-    }
-})
-```
-
-Install flask-cors:
-```bash
-pip install flask-cors
-```
+### CORS Configuration
+The backend is pre-configured to accept connections from:
+- `https://kadelj61-oss.github.io` (GitHub Pages)
+- `http://localhost:*` (local testing)
+- `https://*.ngrok.io` (ngrok tunnels)
+- `https://*.ngrok-free.app` (ngrok free tier)
 
 ## Features in Detail
 
-### Mode Switching
-- Toggle between "Browser Camera" and "Backend Server" modes
-- Settings persist in localStorage
-- Automatic fallback handling
-
 ### Quality Control
-- **HD**: 1920x1080 @ 30fps
-- **SD**: 1280x720 @ 30fps  
-- **UHD**: 3840x2160 @ 30fps (if supported)
+- **SD**: 1280x720 @ 30fps (lower bandwidth)
+- **HD**: 1920x1080 @ 30fps (default)
+- **UHD**: 3840x2160 @ 30fps (if camera supports)
 
-Quality settings apply to both WebRTC and backend modes.
+Quality can be changed on-the-fly from the website.
 
 ### Connection Status
 - 🟢 **Green**: Connected and streaming
-- 🟡 **Yellow**: Connecting...
+- 🟡 **Yellow**: Connecting/Reconnecting
 - 🔴 **Red**: Connection failed
 - ⚪ **Gray**: Not configured
 
+### Auto-Reconnect
+- Automatically reconnects if connection drops
+- Exponential backoff (max 5 attempts)
+- Health checks every 5 seconds
+
 ### Stats Display
-- **WebRTC Mode**: Resolution, FPS (calculated), Status
-- **Backend Mode**: Resolution, FPS, Bitrate, Viewers (from `/api/stats`)
+Real-time statistics from `/api/stats`:
+- Status (Online/Offline)
+- Resolution
+- FPS (Frames Per Second)
+- Bitrate
+- Viewers (concurrent connections)
 
 ## Development
-
-### Local Testing
-
-1. **Test WebRTC Mode:**
-   - Open `index.html` in a browser
-   - Use browser camera mode
-   - Test camera permissions and quality settings
-
-2. **Test Backend Mode:**
-   - Start Python backend: `python main.py`
-   - Open `index.html` in browser
-   - Switch to backend mode
-   - Use `http://localhost:8080` as backend URL
 
 ### Project Structure
 
@@ -135,73 +146,156 @@ Quality settings apply to both WebRTC and backend modes.
 ├── static/
 │   └── index.html         # Same as root (served by Flask)
 ├── src/
-│   └── web_server.py      # Flask backend
+│   ├── web_server.py      # Flask backend with CORS
+│   ├── process_manager.py # Process management
+│   └── ...
+├── config/
+│   └── config.yaml        # Configuration file
 ├── main.py                # Backend entry point
 ├── requirements.txt       # Python dependencies
 └── README.md             # This file
 ```
 
+### Local Testing
+
+1. **Test Backend:**
+   ```bash
+   # Start backend
+   python main.py
+   
+   # In another terminal, test endpoints
+   curl http://localhost:8080/health
+   curl http://localhost:8080/api/stats
+   ```
+
+2. **Test Website Locally:**
+   - Open `index.html` in a browser
+   - Use `http://localhost:8080` as backend URL
+   - Click "Connect"
+
 ## Troubleshooting
 
-### Camera Permission Denied
-- Check browser permissions in settings
-- Ensure site is using HTTPS (required for WebRTC)
-- Click "Retry" button after granting permissions
+### Camera Not Detected
+```bash
+# List video devices
+ls /dev/video*
+
+# Check camera with v4l2
+v4l2-ctl --list-devices
+
+# Test camera
+ffplay /dev/video0
+```
 
 ### Backend Connection Failed
 - Verify backend is running: `curl http://localhost:8080/health`
-- Check ngrok tunnel is active
-- Ensure CORS is configured correctly
+- Check ngrok tunnel is active: `ngrok http 8080`
+- Ensure CORS is configured (flask-cors installed)
 - Check browser console for error messages
-- Verify firewall isn't blocking connections
+- Verify firewall isn't blocking port 8080
 
 ### Stream Not Loading
-- **WebRTC**: Check camera permissions and browser compatibility
-- **Backend**: Verify camera is connected and accessible
-- Try switching quality settings
-- Refresh the page
+- Verify camera is connected and accessible
+- Check backend logs for errors
+- Try different quality settings
+- Ensure adequate bandwidth
+- Check if camera supports selected resolution
 
 ### CORS Errors
-When connecting to backend from GitHub Pages:
-- Install `flask-cors`: `pip install flask-cors`
-- Add CORS configuration to Flask app
-- Ensure ngrok URL is accessible
+- Ensure `flask-cors` is installed: `pip3 install flask-cors`
+- Verify ngrok URL is accessible from browser
 - Check browser console for specific CORS errors
+- Make sure backend is running with CORS enabled
 
-## Browser Compatibility
+### ngrok Connection Issues
+- Verify ngrok is installed and authenticated
+- Check ngrok status: `curl http://localhost:4040/api/tunnels`
+- Ensure port 8080 is not already in use
+- Try restarting ngrok
 
-### WebRTC Mode
-- ✅ Chrome/Edge (recommended)
-- ✅ Firefox
-- ✅ Safari (iOS/macOS)
-- ⚠️ Requires HTTPS (GitHub Pages provides this)
+## Performance Tips
 
-### Backend Mode
-- ✅ All modern browsers
-- Requires backend with CORS enabled
+### Raspberry Pi Optimization
+- Use Raspberry Pi 4 for better performance
+- Ensure adequate cooling (heatsinks/fan)
+- Use quality power supply (5V 3A minimum)
+- Close unnecessary applications
+- Consider overclocking for 4K streaming
 
-## GitHub Actions
+### Network Optimization
+- Use wired Ethernet instead of WiFi when possible
+- Ensure good upload bandwidth (5+ Mbps for HD)
+- Position Pi close to router
+- Use QoS settings on router if available
 
-The repository includes two workflows:
+### Camera Tips
+- Start with SD quality, upgrade if performance is good
+- Ensure good lighting for better image quality
+- Use USB 3.0 camera for higher resolutions
+- Position camera on stable mount to reduce motion blur
 
-1. **`static.yml`**: Deploys to GitHub Pages
-2. **`ci.yml`**: Builds Docker image
+## Running as a Service
+
+To run the backend automatically on boot:
+
+1. **Create systemd service:**
+   ```bash
+   sudo nano /etc/systemd/system/camera-stream.service
+   ```
+
+2. **Add configuration:**
+   ```ini
+   [Unit]
+   Description=24/7 Camera Streaming Service
+   After=network.target
+
+   [Service]
+   Type=simple
+   User=pi
+   WorkingDirectory=/home/pi/24-7-
+   ExecStart=/usr/bin/python3 /home/pi/24-7-/main.py
+   Restart=always
+   RestartSec=10
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+3. **Enable and start:**
+   ```bash
+   sudo systemctl daemon-reload
+   sudo systemctl enable camera-stream.service
+   sudo systemctl start camera-stream.service
+   
+   # Check status
+   sudo systemctl status camera-stream.service
+   ```
 
 ## Security Notes
 
 - Never commit ngrok URLs or authentication tokens
 - Backend URLs are stored in browser localStorage only
-- Camera permissions required for WebRTC mode
-- Backend should validate all inputs
+- Consider adding authentication to backend for production
+- Use HTTPS (ngrok provides this automatically)
+- Regularly update dependencies for security patches
+- Monitor ngrok dashboard for usage
+
+## Browser Compatibility
+
+- ✅ Chrome/Edge (recommended)
+- ✅ Firefox
+- ✅ Safari (iOS/macOS)
+- ✅ All modern browsers with MJPEG support
 
 ## Future Enhancements
 
 - [ ] Recording functionality
-- [ ] Snapshot capture
+- [ ] Snapshot capture to storage
 - [ ] Multiple camera support
 - [ ] Mobile-optimized UI
 - [ ] Stream authentication
-- [ ] P2P WebRTC mode
+- [ ] Motion detection alerts
+- [ ] Cloud storage integration
 
 ## License
 
@@ -212,4 +306,5 @@ All rights reserved © 2026
 For issues or questions:
 - Open an issue on GitHub
 - Check troubleshooting section above
-- Review browser console for errors
+- Review browser console and backend logs for errors
+- Join the discussions on GitHub
