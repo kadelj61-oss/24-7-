@@ -24,7 +24,6 @@
             margin: 0 auto;
         }
 
-        /* Header */
         header {
             text-align: center;
             padding: 30px 0;
@@ -46,7 +45,6 @@
             font-size: 1.1em;
         }
 
-        /* Main Content Grid */
         .main-content {
             display: grid;
             grid-template-columns: 1fr 350px;
@@ -54,7 +52,6 @@
             margin-bottom: 30px;
         }
 
-        /* Stream Container */
         .stream-section {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
@@ -112,643 +109,258 @@
             50% { opacity: 0.3; }
         }
 
-        .viewer-count {
+        .quality-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .quality-btn {
+            padding: 8px 15px;
             background: rgba(255, 255, 255, 0.1);
-            padding: 5px 15px;
-            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
             font-size: 0.9em;
         }
 
-        /* Controls Section */
-        .controls-section {
+        .quality-btn:hover,
+        .quality-btn.active {
+            background: rgba(0, 212, 255, 0.3);
+            border-color: #00d4ff;
+        }
+
+        .sidebar {
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
 
-        .card {
+        .stats-panel {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
             padding: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .card h3 {
+        .stat-item {
             margin-bottom: 15px;
-            color: #00d4ff;
-            font-size: 1.2em;
-        }
-
-        /* Quality Controls */
-        .quality-buttons {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .quality-btn {
-            padding: 12px;
-            background: rgba(0, 212, 255, 0.1);
-            border: 2px solid rgba(0, 212, 255, 0.3);
-            color: #00d4ff;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1em;
-            font-weight: 600;
-        }
-
-        .quality-btn:hover {
-            background: rgba(0, 212, 255, 0.2);
-            border-color: #00d4ff;
-            transform: translateY(-2px);
-        }
-
-        .quality-btn.active {
-            background: #00d4ff;
-            color: #1a1a2e;
-            border-color: #00d4ff;
-        }
-
-        /* Action Buttons */
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .action-btn {
-            padding: 12px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .action-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateX(5px);
-        }
-
-        /* Info Cards */
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
+            padding-bottom: 15px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .info-item:last-child {
+        .stat-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
             border-bottom: none;
         }
 
-        .info-label {
-            color: #888;
-        }
-
-        .info-value {
-            font-weight: 600;
-            color: #00d4ff;
-        }
-
-        /* Status Indicator */
-        .status-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 12px;
-            border-radius: 15px;
+        .stat-label {
             font-size: 0.9em;
-        }
-
-        .status-indicator.online {
-            background: rgba(0, 255, 0, 0.2);
-            color: #00ff00;
-        }
-
-        .status-indicator.offline {
-            background: rgba(255, 0, 0, 0.2);
-            color: #ff0000;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: currentColor;
-        }
-
-        /* Settings Section */
-        .setting-item {
-            margin-bottom: 15px;
-        }
-
-        .setting-label {
-            display: block;
-            margin-bottom: 8px;
             color: #888;
-            font-size: 0.9em;
-        }
-
-        .slider {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: rgba(255, 255, 255, 0.1);
-            outline: none;
-            -webkit-appearance: none;
-        }
-
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #00d4ff;
-            cursor: pointer;
-        }
-
-        .slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #00d4ff;
-            cursor: pointer;
-            border: none;
-        }
-
-        /* Loading State */
-        .loading {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 400px;
-            color: #888;
-        }
-
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top: 4px solid #00d4ff;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Statistics Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .stat-card {
-            background: rgba(0, 212, 255, 0.05);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            text-align: center;
+            margin-bottom: 5px;
         }
 
         .stat-value {
-            font-size: 2em;
-            font-weight: 700;
+            font-size: 1.5em;
+            font-weight: bold;
             color: #00d4ff;
+        }
+
+        .controls-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+            color: #ddd;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, #00d4ff, #0099ff);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .status {
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 4px solid #00d4ff;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .status.success {
+            background: rgba(0, 255, 0, 0.1);
+            border-left-color: #00ff00;
             display: block;
         }
 
-        .stat-label {
-            color: #888;
-            font-size: 0.9em;
-            margin-top: 5px;
+        .status.error {
+            background: rgba(255, 0, 0, 0.1);
+            border-left-color: #ff0000;
+            display: block;
         }
 
-        /* Footer */
         footer {
             text-align: center;
-            padding: 30px 0;
-            color: #666;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+            color: #888;
             margin-top: 30px;
         }
 
-        /* Responsive Design */
-        @media (max-width: 1024px) {
+        @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
             }
 
-            .quality-buttons {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        @media (max-width: 768px) {
             h1 {
                 font-size: 1.8em;
             }
 
-            .quality-buttons {
-                grid-template-columns: repeat(2, 1fr);
+            #stream {
+                min-height: 300px;
             }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Fullscreen Mode */
-        .fullscreen-btn {
-            position: absolute;
-            bottom: 15px;
-            right: 15px;
-            background: rgba(0, 0, 0, 0.7);
-            border: none;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .fullscreen-btn:hover {
-            background: rgba(0, 0, 0, 0.9);
-        }
-
-        /* Toast Notifications */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 212, 255, 0.9);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <header>
-            <h1>🎥 24/7 Live Camera Stream</h1>
-            <p class="subtitle">Real-time streaming with multiprocessing</p>
+            <h1>24/7 Live Camera Stream</h1>
+            <p class="subtitle">Real-time video streaming</p>
         </header>
 
-        <!-- Main Content -->
         <div class="main-content">
-            <!-- Stream Section -->
             <div class="stream-section">
-                <div class="stream-container" id="streamContainer">
-                    <div class="loading" id="loadingIndicator">
-                        <div class="spinner"></div>
-                        <p>Loading stream...</p>
-                    </div>
-                    <img id="stream" src="/stream/hd" alt="Camera Stream" style="display: none;">
+                <div class="stream-container">
+                    <img id="stream" src="/video_feed" alt="Live camera stream">
                     <div class="stream-overlay">
                         <div class="live-indicator">
-                            <div class="live-dot"></div>
+                            <span class="live-dot"></span>
                             <span>LIVE</span>
                         </div>
-                        <div class="viewer-count">
-                            👁️ <span id="viewerCount">0</span> viewers
+                        <div class="quality-selector">
+                            <button class="quality-btn active" data-quality="hd">HD</button>
+                            <button class="quality-btn" data-quality="sd">SD</button>
+                            <button class="quality-btn" data-quality="uhd">UHD</button>
                         </div>
-                    </div>
-                    <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
-                </div>
-
-                <!-- Statistics -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <span class="stat-value" id="fpsCounter">30</span>
-                        <span class="stat-label">FPS</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-value" id="bitrateCounter">0</span>
-                        <span class="stat-label">Mbps</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-value" id="uptimeCounter">00:00:00</span>
-                        <span class="stat-label">Uptime</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-value" id="resolutionDisplay">1920x1080</span>
-                        <span class="stat-label">Resolution</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Controls Section -->
-            <div class="controls-section">
-                <!-- Quality Settings -->
-                <div class="card">
-                    <h3>🎬 Quality Settings</h3>
-                    <div class="quality-buttons">
-                        <button class="quality-btn active" onclick="changeQuality('hd')">
-                            HD<br><small>1080p</small>
-                        </button>
-                        <button class="quality-btn" onclick="changeQuality('sd')">
-                            SD<br><small>480p</small>
-                        </button>
-                        <button class="quality-btn" onclick="changeQuality('mobile')">
-                            Mobile<br><small>240p</small>
-                        </button>
-                        <button class="quality-btn" onclick="changeQuality('auto')">
-                            Auto<br><small>Adaptive</small>
-                        </button>
+            <div class="sidebar">
+                <div class="stats-panel">
+                    <h3>Stream Stats</h3>
+                    <div class="stat-item">
+                        <div class="stat-label">Status</div>
+                        <div class="stat-value" id="status">ONLINE</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Resolution</div>
+                        <div class="stat-value" id="resolution">1920x1080</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">FPS</div>
+                        <div class="stat-value" id="fps">30</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Bitrate</div>
+                        <div class="stat-value" id="bitrate">5 Mbps</div>
                     </div>
                 </div>
 
-                <!-- Stream Controls -->
-                <div class="card">
-                    <h3>🎮 Controls</h3>
-                    <div class="action-buttons">
-                        <button class="action-btn" onclick="refreshStream()">
-                            🔄 Refresh Stream
-                        </button>
-                        <button class="action-btn" onclick="takeSnapshot()">
-                            📸 Take Snapshot
-                        </button>
-                        <button class="action-btn" onclick="toggleRecording()">
-                            ⏺️ <span id="recordBtn">Start Recording</span>
-                        </button>
+                <div class="controls-panel">
+                    <h3>Controls</h3>
+                    <div class="control-group">
+                        <button onclick="takeSnapshot()">Capture Snapshot</button>
                     </div>
-                </div>
-
-                <!-- Stream Info -->
-                <div class="card">
-                    <h3>ℹ️ Stream Information</h3>
-                    <div class="info-item">
-                        <span class="info-label">Status</span>
-                        <span class="info-value">
-                            <div class="status-indicator online" id="statusIndicator">
-                                <div class="status-dot"></div>
-                                <span>Online</span>
-                            </div>
-                        </span>
+                    <div class="control-group">
+                        <button onclick="toggleRecording()">Start Recording</button>
                     </div>
-                    <div class="info-item">
-                        <span class="info-label">Quality</span>
-                        <span class="info-value" id="currentQuality">HD (1080p)</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Server Time</span>
-                        <span class="info-value" id="serverTime">--:--:--</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Latency</span>
-                        <span class="info-value" id="latency">-- ms</span>
-                    </div>
-                </div>
-
-                <!-- Display Settings -->
-                <div class="card">
-                    <h3>⚙️ Display Settings</h3>
-                    <div class="setting-item">
-                        <label class="setting-label">Brightness: <span id="brightnessValue">100</span>%</label>
-                        <input type="range" min="50" max="150" value="100" class="slider" id="brightnessSlider">
-                    </div>
-                    <div class="setting-item">
-                        <label class="setting-label">Contrast: <span id="contrastValue">100</span>%</label>
-                        <input type="range" min="50" max="150" value="100" class="slider" id="contrastSlider">
-                    </div>
+                    <div id="recording-status" class="status"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Footer -->
         <footer>
-            <p>© 2025 Camera Streaming Server | Built with Python & Flask</p>
-            <p style="margin-top: 10px; font-size: 0.9em;">
-                <a href="https://github.com/YOUR_USERNAME/camera-streaming-server" style="color: #00d4ff; text-decoration: none;">
-                    View on GitHub
-                </a>
-            </p>
+            <p>&copy; 2026 24/7 Camera Streaming. All rights reserved.</p>
         </footer>
     </div>
 
-    <!-- Toast Notification -->
-    <div class="toast" id="toast"></div>
-
-    <!-- JavaScript -->
     <script>
-        let currentQuality = 'hd';
-        let isRecording = false;
-        let startTime = Date.now();
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeStream();
-            startStatsUpdate();
-            updateServerTime();
-        });
-
-        // Initialize stream
-        function initializeStream() {
-            const streamImg = document.getElementById('stream');
-            const loading = document.getElementById('loadingIndicator');
-
-            streamImg.onload = function() {
-                loading.style.display = 'none';
-                streamImg.style.display = 'block';
-                showToast('Stream connected successfully!');
-            };
-
-            streamImg.onerror = function() {
-                loading.innerHTML = '<p style="color: #ff0000;">❌ Failed to load stream</p>';
-                showToast('Failed to connect to stream', 'error');
-            };
-        }
-
-        // Change quality
-        function changeQuality(quality) {
-            currentQuality = quality;
-            const streamImg = document.getElementById('stream');
-            
-            // Update active button
-            document.querySelectorAll('.quality-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.closest('.quality-btn').classList.add('active');
-
-            // Update stream source
-            if (quality !== 'auto') {
-                streamImg.src = '/stream/' + quality;
-            }
-
-            // Update quality display
-            const qualityMap = {
-                'hd': 'HD (1080p)',
-                'sd': 'SD (480p)',
-                'mobile': 'Mobile (240p)',
-                'auto': 'Auto (Adaptive)'
-            };
-            document.getElementById('currentQuality').textContent = qualityMap[quality];
-
-            showToast('Switched to ' + qualityMap[quality]);
-        }
-
-        // Refresh stream
-        function refreshStream() {
-            const streamImg = document.getElementById('stream');
-            const loading = document.getElementById('loadingIndicator');
-            
-            loading.style.display = 'flex';
-            streamImg.style.display = 'none';
-            
-            const currentSrc = streamImg.src;
-            streamImg.src = '';
-            
-            setTimeout(() => {
-                streamImg.src = currentSrc + '?t=' + Date.now();
-            }, 100);
-
-            showToast('Refreshing stream...');
-        }
-
-        // Take snapshot
         function takeSnapshot() {
-            const streamImg = document.getElementById('stream');
-            const canvas = document.createElement('canvas');
-            canvas.width = streamImg.naturalWidth;
-            canvas.height = streamImg.naturalHeight;
-            
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(streamImg, 0, 0);
-            
-            canvas.toBlob(function(blob) {
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'snapshot_' + new Date().getTime() + '.jpg';
-                a.click();
-                URL.revokeObjectURL(url);
-                showToast('📸 Snapshot saved!');
-            }, 'image/jpeg', 0.95);
+            console.log('Snapshot captured');
+            showStatus('Snapshot saved!', 'success');
         }
 
-        // Toggle recording
         function toggleRecording() {
-            isRecording = !isRecording;
-            const btn = document.getElementById('recordBtn');
+            const button = event.target;
+            const isRecording = button.textContent === 'Stop Recording';
             
             if (isRecording) {
-                btn.textContent = 'Stop Recording';
-                btn.parentElement.style.background = 'rgba(255, 0, 0, 0.2)';
-                showToast('🔴 Recording started');
+                button.textContent = 'Start Recording';
+                showStatus('Recording stopped', 'success');
             } else {
-                btn.textContent = 'Start Recording';
-                btn.parentElement.style.background = '';
-                showToast('⏹️ Recording stopped');
+                button.textContent = 'Stop Recording';
+                showStatus('Recording started', 'success');
             }
         }
 
-        // Fullscreen toggle
-        function toggleFullscreen() {
-            const container = document.getElementById('streamContainer');
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('recording-status');
+            statusEl.textContent = message;
+            statusEl.className = 'status ' + type;
             
-            if (!document.fullscreenElement) {
-                container.requestFullscreen();
-            } else {
-                document.exitFullscreen();
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusEl.className = 'status';
+                }, 3000);
             }
         }
 
-        // Update stats
-        function startStatsUpdate() {
-            // Update uptime
-            setInterval(() => {
-                const elapsed = Date.now() - startTime;
-                const hours = Math.floor(elapsed / 3600000);
-                const minutes = Math.floor((elapsed % 3600000) / 60000);
-                const seconds = Math.floor((elapsed % 60000) / 1000);
-                
-                document.getElementById('uptimeCounter').textContent = 
-                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }, 1000);
-
-            // Simulate viewer count and stats (replace with real WebSocket data)
-            setInterval(() => {
-                document.getElementById('viewerCount').textContent = Math.floor(Math.random() * 10) + 1;
-                document.getElementById('bitrateCounter').textContent = (Math.random() * 2 + 3).toFixed(1);
-            }, 5000);
-        }
-
-        // Update server time
-        function updateServerTime() {
-            setInterval(() => {
-                const now = new Date();
-                document.getElementById('serverTime').textContent = now.toLocaleTimeString();
-            }, 1000);
-        }
-
-        // Brightness/Contrast controls
-        document.getElementById('brightnessSlider').addEventListener('input', function(e) {
-            const value = e.target.value;
-            document.getElementById('brightnessValue').textContent = value;
-            document.getElementById('stream').style.filter = 
-                `brightness(${value}%) contrast(${document.getElementById('contrastSlider').value}%)`;
+        // Quality selector
+        document.querySelectorAll('.quality-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                console.log('Quality changed to:', this.dataset.quality);
+            });
         });
 
-        document.getElementById('contrastSlider').addEventListener('input', function(e) {
-            const value = e.target.value;
-            document.getElementById('contrastValue').textContent = value;
-            document.getElementById('stream').style.filter = 
-                `brightness(${document.getElementById('brightnessSlider').value}%) contrast(${value}%)`;
-        });
-
-        // Toast notification
-        function showToast(message, type = 'info') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        // Check connection status
+        // Auto-refresh stream
+        const streamImg = document.getElementById('stream');
         setInterval(() => {
-            fetch('/health')
-                .then(response => response.json())
-                .then(data => {
-                    const indicator = document.getElementById('statusIndicator');
-                    indicator.className = 'status-indicator online';
-                    indicator.innerHTML = '<div class="status-dot"></div><span>Online</span>';
-                })
-                .catch(error => {
-                    const indicator = document.getElementById('statusIndicator');
-                    indicator.className = 'status-indicator offline';
-                    indicator.innerHTML = '<div class="status-dot"></div><span>Offline</span>';
-                });
-        }, 5000);
+            streamImg.src = '/video_feed?t=' + new Date().getTime();
+        }, 100);
     </script>
 </body>
 </html>
