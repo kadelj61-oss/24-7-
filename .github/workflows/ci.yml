@@ -30,7 +30,7 @@ jobs:
         uses: docker/setup-buildx-action@v1
       - name: Build Docker Image
         run: |
-          docker build . -t myimage:latest
+         docker build -f docker/Dockerfile -t myimage:latest .
       - name: Push Docker Image
         run: |
           docker tag myimage:latest myrepo/myimage:latest
