@@ -433,7 +433,7 @@
                     <summary>📖 Setup Instructions</summary>
                     <ol>
                         <li>Connect USB camera to Raspberry Pi</li>
-                        <li>Run: <code>python main.py</code> on Raspberry Pi</li>
+                        <li>Run: <code>python3 main.py</code> on Raspberry Pi</li>
                         <li>Run: <code>ngrok http 8080</code> on Raspberry Pi</li>
                         <li>Copy the ngrok URL (e.g., https://abc123.ngrok.io)</li>
                         <li>Paste URL above and click Connect</li>
@@ -717,17 +717,17 @@
         }
 
         async function autoReconnect() {
+            if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                showConnectionStatus('error', 'Failed to reconnect. Please try manually.');
+                return;
+            }
+
             reconnectAttempts++;
             showConnectionStatus('connecting', `Reconnecting (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
             
             const delay = 3000 * Math.pow(2, reconnectAttempts - 1); // Exponential backoff
             
             setTimeout(async () => {
-                if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-                    showConnectionStatus('error', 'Failed to reconnect. Please try manually.');
-                    return;
-                }
-                
                 try {
                     const response = await fetch(`${backendUrl}/health`);
                     if (response.ok) {
