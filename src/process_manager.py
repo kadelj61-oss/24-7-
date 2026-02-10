@@ -81,6 +81,10 @@ class ProcessManager:
         # Setup queues
         self.setup_queues()
         
+        # Setup signal handlers (only in parent process)
+        signal.signal(signal.SIGINT, self.handle_signal)
+        signal.signal(signal.SIGTERM, self.handle_signal)
+        
         # Start in order
         self.start_camera_process()
         time.sleep(1)  # Let camera initialize

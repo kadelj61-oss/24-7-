@@ -2,7 +2,6 @@
 import logging
 import yaml
 import sys
-import signal
 from src.process_manager import ProcessManager
 
 
@@ -16,11 +15,7 @@ def main():
         # Create process manager
         manager = ProcessManager(config)
         
-        # Setup signal handlers
-        signal.signal(signal.SIGINT, manager.handle_signal)
-        signal.signal(signal.SIGTERM, manager.handle_signal)
-        
-        # Start all processes
+        # Start all processes (signal handlers set up inside)
         manager.start_all()
         
         # Keep main process alive and monitor health
@@ -33,6 +28,8 @@ def main():
         sys.exit(0)
     except Exception as e:
         logging.error(f"Fatal error: {e}")
+        if 'manager' in locals():
+            manager.stop_all()
         sys.exit(1)
 
 
