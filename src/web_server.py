@@ -7,6 +7,8 @@ class WebServer:
     def __init__(self, config, stream_queues):
         self.config = config
         self.stream_queues = stream_queues
+        self.start_time = time.time()
+        self.active_clients = set()
 
         # Set up Flask with static folder
         self.app = Flask(__name__,
@@ -76,8 +78,6 @@ class WebServer:
         """Start web server"""
         host = self.config['streaming']['host']
         port = self.config['streaming']['port']
-        self.start_time = time.time()
-        self.active_clients = set()
 
         logging.info(f"Starting web server on {host}:{port}")
         self.app.run(host=host, port=port, debug=False, threaded=True)
