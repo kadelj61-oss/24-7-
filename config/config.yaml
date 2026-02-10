@@ -1,0 +1,31 @@
+camera:
+  source: 0  # 0 for webcam, or RTSP URL for IP cameras
+  fps: 30
+  resolution: [1920, 1080]
+  reconnect_delay: 5
+  max_reconnect_attempts: 10
+
+streaming:
+  host: 0.0.0.0
+  port: 8080
+  formats:
+    - name: uhd
+      width: 3840
+      height: 2160
+      quality: 95
+    - name: hd
+      width: 1920
+      height: 1080
+      quality: 85
+    - name: sd
+      width: 1280
+      height: 720
+      quality: 75
+
+processing:
+  buffer_size: 30
+  encoder_workers: 2
+
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
