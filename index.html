@@ -168,6 +168,20 @@
             color: #00d4ff;
         }
 
+        .stat-value.offline {
+            color: #666;
+        }
+
+        .live-indicator.offline {
+            background: rgba(128, 128, 128, 0.2);
+            border-color: #888;
+        }
+
+        .live-indicator.offline .live-dot {
+            background: #888;
+            animation: none;
+        }
+
         .controls-panel {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
@@ -262,7 +276,7 @@
         <div class="main-content">
             <div class="stream-section">
                 <div class="stream-container">
-                    <img id="stream" src="/video_feed" alt="Live camera stream">
+                    <img id="stream" src="/stream/hd" alt="Live camera stream">
                     <div class="stream-overlay">
                         <div class="live-indicator">
                             <span class="live-dot"></span>
@@ -295,6 +309,10 @@
                     <div class="stat-item">
                         <div class="stat-label">Bitrate</div>
                         <div class="stat-value" id="bitrate">5 Mbps</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Viewers</div>
+                        <div class="stat-value" id="viewers">0</div>
                     </div>
                 </div>
 
@@ -350,17 +368,77 @@
         // Quality selector
         document.querySelectorAll('.quality-btn').forEach(btn => {
             btn.addEventListener('click', function() {
+                const quality = this.dataset.quality;
+                
+                // Update active button
                 document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                console.log('Quality changed to:', this.dataset.quality);
+                
+                // Change stream source
+                const streamImg = document.getElementById('stream');
+                streamImg.src = '/stream/' + quality;
+                
+                console.log('Quality changed to:', quality);
+                showStatus('Stream quality changed to ' + quality.toUpperCase(), 'success');
             });
         });
 
-        // Auto-refresh stream
-        const streamImg = document.getElementById('stream');
-        setInterval(() => {
-            streamImg.src = '/video_feed?t=' + new Date().getTime();
-        }, 100);
+        // Update stream stats from API
+        async function updateStats() {
+            try {
+                // Check health status
+                const healthResponse = await fetch('/health');
+                const healthData = await healthResponse.json();
+                
+                // Get stream stats
+                const statsResponse = await fetch('/api/stats');
+                const statsData = await statsResponse.json();
+                
+                // Update all stats
+                document.getElementById('status').textContent = 'ONLINE';
+                document.getElementById('status').classList.remove('offline');
+                document.getElementById('resolution').textContent = statsData.resolution;
+                document.getElementById('resolution').classList.remove('offline');
+                document.getElementById('fps').textContent = statsData.fps;
+                document.getElementById('fps').classList.remove('offline');
+                document.getElementById('bitrate').textContent = statsData.bitrate + ' Mbps';
+                document.getElementById('bitrate').classList.remove('offline');
+                document.getElementById('viewers').textContent = statsData.viewers;
+                document.getElementById('viewers').classList.remove('offline');
+                
+                // Update live indicator
+                const liveIndicator = document.querySelector('.live-indicator');
+                liveIndicator.classList.remove('offline');
+                liveIndicator.querySelector('span:last-child').textContent = 'LIVE';
+                
+            } catch (error) {
+                console.error('Failed to fetch stats:', error);
+                
+                // Show offline status
+                document.getElementById('status').textContent = 'OFFLINE';
+                document.getElementById('status').classList.add('offline');
+                document.getElementById('resolution').textContent = '--';
+                document.getElementById('resolution').classList.add('offline');
+                document.getElementById('fps').textContent = '--';
+                document.getElementById('fps').classList.add('offline');
+                document.getElementById('bitrate').textContent = '--';
+                document.getElementById('bitrate').classList.add('offline');
+                document.getElementById('viewers').textContent = '--';
+                document.getElementById('viewers').classList.add('offline');
+                
+                // Update live indicator to offline
+                const liveIndicator = document.querySelector('.live-indicator');
+                liveIndicator.classList.add('offline');
+                liveIndicator.querySelector('span:last-child').textContent = 'OFFLINE';
+            }
+        }
+
+        // Initialize: Set default stream source and start stats updates
+        document.getElementById('stream').src = '/stream/hd';
+        
+        // Update stats immediately and then every 2 seconds
+        updateStats();
+        setInterval(updateStats, 2000);
     </script>
 </body>
 </html>
