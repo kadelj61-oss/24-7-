@@ -45,7 +45,7 @@
             font-size: 1.1em;
         }
 
-        .mode-selector-panel {
+        .config-panel {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
             padding: 20px;
@@ -53,47 +53,24 @@
             margin-bottom: 20px;
         }
 
-        .mode-buttons {
+        .config-panel h3 {
+            margin-bottom: 15px;
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .mode-btn {
-            flex: 1;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: #fff;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1em;
-            font-weight: bold;
-        }
-
-        .mode-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .mode-btn.active {
-            background: linear-gradient(45deg, #00d4ff, #0099ff);
-            border-color: #00d4ff;
-            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
-        }
-
-        .backend-config {
-            display: none;
-        }
-
-        .backend-config.active {
-            display: block;
+            align-items: center;
+            gap: 10px;
         }
 
         .url-input-group {
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
+        }
+
+        .url-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            color: #ddd;
         }
 
         .url-input {
@@ -110,9 +87,17 @@
             color: #888;
         }
 
-        .connect-btn {
+        .connect-btn, .disconnect-btn {
             padding: 12px 30px;
             width: auto;
+        }
+
+        .disconnect-btn {
+            background: rgba(255, 0, 0, 0.3);
+        }
+
+        .disconnect-btn:hover {
+            background: rgba(255, 0, 0, 0.5);
         }
 
         .connection-status {
@@ -144,6 +129,42 @@
 
         .status-dot.error {
             background: #ff0000;
+        }
+
+        .help-text {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .help-text details {
+            cursor: pointer;
+        }
+
+        .help-text summary {
+            font-weight: bold;
+            margin-bottom: 10px;
+            user-select: none;
+        }
+
+        .help-text ol {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .help-text li {
+            margin-bottom: 8px;
+            color: #ccc;
+        }
+
+        .help-text code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #00d4ff;
         }
 
         .permission-message {
@@ -186,22 +207,6 @@
             height: auto;
             display: block;
             min-height: 400px;
-        }
-
-        #webrtc-video {
-            width: 100%;
-            height: auto;
-            display: none;
-            min-height: 400px;
-            background: #000;
-        }
-
-        #webrtc-video.active {
-            display: block;
-        }
-
-        #stream.active {
-            display: block;
         }
 
         .stream-overlay {
@@ -400,56 +405,47 @@
     <div class="container">
         <header>
             <h1>24/7 Live Camera Stream</h1>
-            <p class="subtitle">Real-time video streaming</p>
+            <p class="subtitle">Raspberry Pi USB Camera Streaming</p>
         </header>
+
+        <!-- Raspberry Pi Connection Configuration -->
+        <div class="config-panel">
+            <h3>🔧 Raspberry Pi Connection</h3>
+            <div class="connection-status" id="connection-status">
+                <div class="status-dot" id="connection-dot"></div>
+                <div id="connection-status-text">Not Connected</div>
+            </div>
+            <div class="url-input-group">
+                <label for="backend-url">Backend URL (ngrok or public IP):</label>
+                <div style="display: flex; gap: 10px;">
+                    <input 
+                        type="text" 
+                        class="url-input" 
+                        id="backend-url" 
+                        placeholder="https://abc123.ngrok.io"
+                    />
+                    <button class="connect-btn" id="connect-btn">Connect</button>
+                    <button class="disconnect-btn" id="disconnect-btn" style="display: none;">Disconnect</button>
+                </div>
+            </div>
+            <div class="help-text">
+                <details>
+                    <summary>📖 Setup Instructions</summary>
+                    <ol>
+                        <li>Connect USB camera to Raspberry Pi</li>
+                        <li>Run: <code>python main.py</code> on Raspberry Pi</li>
+                        <li>Run: <code>ngrok http 8080</code> on Raspberry Pi</li>
+                        <li>Copy the ngrok URL (e.g., https://abc123.ngrok.io)</li>
+                        <li>Paste URL above and click Connect</li>
+                    </ol>
+                </details>
+            </div>
+        </div>
 
         <div class="main-content">
             <div class="stream-section">
-                <!-- Mode Selector Panel -->
-                <div class="mode-selector-panel">
-                    <h3>Stream Mode</h3>
-                    <div class="mode-buttons">
-                        <button class="mode-btn active" id="webrtc-mode-btn">
-                            📹 Browser Camera
-                        </button>
-                        <button class="mode-btn" id="backend-mode-btn">
-                            🖥️ Backend Server
-                        </button>
-                    </div>
-
-                    <!-- Backend Configuration -->
-                    <div class="backend-config" id="backend-config">
-                        <div class="connection-status">
-                            <div class="status-dot" id="connection-dot"></div>
-                            <div id="connection-status-text">Not Connected</div>
-                        </div>
-                        <div class="url-input-group">
-                            <input 
-                                type="text" 
-                                class="url-input" 
-                                id="backend-url" 
-                                placeholder="https://your-ngrok-url.ngrok.io"
-                            />
-                            <button class="connect-btn" id="connect-btn">Connect</button>
-                        </div>
-                        <div style="font-size: 0.85em; color: #888; margin-top: 10px;">
-                            💡 Run your Python backend locally with ngrok and paste the URL here
-                        </div>
-                    </div>
-
-                    <!-- Camera Permission Message -->
-                    <div class="permission-message" id="permission-message">
-                        <strong>Camera Access Required</strong>
-                        <p>Please allow camera access to use WebRTC mode.</p>
-                        <button onclick="retryCamera()" style="width: auto; margin-top: 10px; padding: 8px 20px;">
-                            Retry
-                        </button>
-                    </div>
-                </div>
-
                 <div class="stream-container">
                     <img id="stream" src="" alt="Live camera stream" style="display: none;">
-                    <video id="webrtc-video" autoplay playsinline muted></video>
                     <div class="stream-overlay">
                         <div class="live-indicator">
                             <span class="live-dot"></span>
@@ -509,250 +505,247 @@
 
     <script>
         // State management
-        let currentMode = 'webrtc'; // 'webrtc' or 'backend'
         let backendUrl = localStorage.getItem('backendUrl') || '';
-        let webrtcStream = null;
         let statsInterval = null;
-        let fpsCounter = null;
+        let healthCheckInterval = null;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 5;
+        let currentQuality = 'hd';
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             // Load saved backend URL
             if (backendUrl) {
                 document.getElementById('backend-url').value = backendUrl;
-            }
-
-            // Load saved mode
-            const savedMode = localStorage.getItem('streamMode') || 'webrtc';
-            if (savedMode === 'backend' && backendUrl) {
-                switchMode('backend');
+                // Auto-connect if we have a saved URL
+                connectToBackend();
             } else {
-                switchMode('webrtc');
+                setOfflineStats();
             }
 
             // Set up event listeners
-            document.getElementById('webrtc-mode-btn').addEventListener('click', () => switchMode('webrtc'));
-            document.getElementById('backend-mode-btn').addEventListener('click', () => switchMode('backend'));
-            document.getElementById('connect-btn').addEventListener('click', connectBackend);
+            document.getElementById('connect-btn').addEventListener('click', connectToBackend);
+            document.getElementById('disconnect-btn').addEventListener('click', disconnectBackend);
             
             // Save backend URL on input
             document.getElementById('backend-url').addEventListener('input', (e) => {
-                backendUrl = e.target.value;
+                backendUrl = e.target.value.trim();
                 localStorage.setItem('backendUrl', backendUrl);
+            });
+
+            // Quality selector
+            document.querySelectorAll('.quality-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentQuality = this.dataset.quality;
+                    
+                    // Update active button
+                    document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Change stream source if connected
+                    if (backendUrl) {
+                        updateStreamSource();
+                    }
+                });
             });
         });
 
-        // Mode switching
-        async function switchMode(mode) {
-            currentMode = mode;
-            localStorage.setItem('streamMode', mode);
-
-            // Update mode buttons
-            document.getElementById('webrtc-mode-btn').classList.toggle('active', mode === 'webrtc');
-            document.getElementById('backend-mode-btn').classList.toggle('active', mode === 'backend');
-
-            // Show/hide backend config
-            document.getElementById('backend-config').classList.toggle('active', mode === 'backend');
-
-            // Clear any intervals
-            if (statsInterval) {
-                clearInterval(statsInterval);
-                statsInterval = null;
-            }
-
-            if (mode === 'webrtc') {
-                await startWebRTC();
-            } else {
-                stopWebRTC();
-                if (backendUrl) {
-                    await connectBackend();
-                } else {
-                    updateConnectionStatus('error', 'Please enter backend URL');
-                }
-            }
-        }
-
-        // WebRTC Mode
-        async function startWebRTC() {
-            try {
-                document.getElementById('permission-message').classList.remove('show');
-                updateConnectionStatus('connecting', 'Requesting camera access...');
-                
-                // Get quality settings
-                const quality = document.querySelector('.quality-btn.active').dataset.quality;
-                const constraints = getVideoConstraints(quality);
-
-                // Request camera access
-                const stream = await navigator.mediaDevices.getUserMedia({ video: constraints });
-                webrtcStream = stream;
-
-                // Display video
-                const videoElement = document.getElementById('webrtc-video');
-                videoElement.srcObject = stream;
-                videoElement.classList.add('active');
-                document.getElementById('stream').style.display = 'none';
-
-                // Update status
-                updateConnectionStatus('connected', 'Camera Active');
-                updateLiveIndicator(true);
-
-                // Start FPS calculation
-                startFPSCounter(videoElement);
-
-                // Update stats
-                updateWebRTCStats(stream);
-
-            } catch (error) {
-                console.error('WebRTC error:', error);
-                updateConnectionStatus('error', 'Camera access denied');
-                updateLiveIndicator(false);
-                document.getElementById('permission-message').classList.add('show');
-                
-                // Update stats to show offline
-                setOfflineStats();
-            }
-        }
-
-        function stopWebRTC() {
-            if (webrtcStream) {
-                webrtcStream.getTracks().forEach(track => track.stop());
-                webrtcStream = null;
-            }
-
-            const videoElement = document.getElementById('webrtc-video');
-            videoElement.srcObject = null;
-            videoElement.classList.remove('active');
-
-            if (fpsCounter) {
-                fpsCounter.stop();
-                fpsCounter = null;
-            }
-        }
-
-        function getVideoConstraints(quality) {
-            const constraints = {
-                hd: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
-                sd: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
-                uhd: { width: { ideal: 3840 }, height: { ideal: 2160 }, frameRate: { ideal: 30 } }
-            };
-            return constraints[quality] || constraints.hd;
-        }
-
-        function updateWebRTCStats(stream) {
-            const videoTrack = stream.getVideoTracks()[0];
-            const settings = videoTrack.getSettings();
-            
-            document.getElementById('status').textContent = 'ONLINE';
-            document.getElementById('status').classList.remove('offline');
-            document.getElementById('resolution').textContent = `${settings.width}x${settings.height}`;
-            document.getElementById('resolution').classList.remove('offline');
-            document.getElementById('bitrate').textContent = 'N/A';
-            document.getElementById('bitrate').classList.remove('offline');
-            document.getElementById('viewers').textContent = '1';
-            document.getElementById('viewers').classList.remove('offline');
-        }
-
-        // FPS Counter
-        function startFPSCounter(videoElement) {
-            let lastTime = performance.now();
-            let frames = 0;
-
-            function countFrame() {
-                frames++;
-                const currentTime = performance.now();
-                const elapsed = currentTime - lastTime;
-
-                if (elapsed >= 1000) {
-                    const fps = Math.round((frames * 1000) / elapsed);
-                    document.getElementById('fps').textContent = fps;
-                    document.getElementById('fps').classList.remove('offline');
-                    frames = 0;
-                    lastTime = currentTime;
-                }
-
-                if (webrtcStream) {
-                    requestAnimationFrame(countFrame);
-                }
-            }
-
-            fpsCounter = { stop: () => { webrtcStream = null; } };
-            requestAnimationFrame(countFrame);
-        }
-
-        function retryCamera() {
-            startWebRTC();
-        }
-
-        // Backend Mode
-        async function connectBackend() {
+        // Backend connection
+        async function connectToBackend() {
             const url = document.getElementById('backend-url').value.trim();
             if (!url) {
-                updateConnectionStatus('error', 'Please enter a backend URL');
+                showConnectionStatus('error', 'Please enter a backend URL');
                 return;
             }
 
             backendUrl = url;
             localStorage.setItem('backendUrl', backendUrl);
-            updateConnectionStatus('connecting', 'Connecting...');
+            showConnectionStatus('connecting', 'Connecting...');
 
             try {
                 // Test health endpoint
-                const healthResponse = await fetch(`${backendUrl}/health`);
+                const healthResponse = await fetch(`${backendUrl}/health`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
                 if (!healthResponse.ok) {
                     throw new Error('Health check failed');
                 }
 
-                // Connection successful
-                updateConnectionStatus('connected', 'Connected');
-                updateLiveIndicator(true);
+                const healthData = await healthResponse.json();
+                
+                if (healthData.status === 'ok') {
+                    // Connection successful
+                    showConnectionStatus('connected', 'Connected');
+                    updateLiveIndicator(true);
+                    reconnectAttempts = 0;
 
-                // Load stream
-                const quality = document.querySelector('.quality-btn.active').dataset.quality;
-                const streamImg = document.getElementById('stream');
-                streamImg.src = `${backendUrl}/stream/${quality}`;
-                streamImg.style.display = 'block';
-                document.getElementById('webrtc-video').classList.remove('active');
+                    // Show disconnect button, hide connect button
+                    document.getElementById('connect-btn').style.display = 'none';
+                    document.getElementById('disconnect-btn').style.display = 'block';
 
-                // Start stats updates
-                updateBackendStats();
-                statsInterval = setInterval(updateBackendStats, 2000);
+                    // Load stream
+                    updateStreamSource();
+
+                    // Start stats updates
+                    startStatsUpdates();
+                    startHealthCheck();
+                } else {
+                    throw new Error('Backend returned invalid status');
+                }
 
             } catch (error) {
                 console.error('Backend connection error:', error);
-                updateConnectionStatus('error', 'Connection failed - Check URL and CORS settings');
+                showConnectionStatus('error', 'Cannot connect to Raspberry Pi. Check URL and CORS settings.');
                 updateLiveIndicator(false);
                 setOfflineStats();
+                
+                // Try auto-reconnect
+                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    autoReconnect();
+                }
             }
         }
 
-        async function updateBackendStats() {
+        function disconnectBackend() {
+            // Stop all intervals
+            if (statsInterval) {
+                clearInterval(statsInterval);
+                statsInterval = null;
+            }
+            if (healthCheckInterval) {
+                clearInterval(healthCheckInterval);
+                healthCheckInterval = null;
+            }
+
+            // Clear stream
+            const streamImg = document.getElementById('stream');
+            streamImg.src = '';
+            streamImg.style.display = 'none';
+
+            // Update UI
+            showConnectionStatus('disconnected', 'Disconnected');
+            updateLiveIndicator(false);
+            setOfflineStats();
+
+            // Show connect button, hide disconnect button
+            document.getElementById('connect-btn').style.display = 'block';
+            document.getElementById('disconnect-btn').style.display = 'none';
+
+            reconnectAttempts = 0;
+        }
+
+        function updateStreamSource() {
+            const streamImg = document.getElementById('stream');
+            streamImg.src = `${backendUrl}/stream/${currentQuality}?t=${Date.now()}`;
+            streamImg.style.display = 'block';
+        }
+
+        function startStatsUpdates() {
+            // Clear any existing interval
+            if (statsInterval) {
+                clearInterval(statsInterval);
+            }
+            
+            // Update immediately
+            fetchStats();
+            
+            // Then update every 2 seconds
+            statsInterval = setInterval(fetchStats, 2000);
+        }
+
+        function startHealthCheck() {
+            // Clear any existing interval
+            if (healthCheckInterval) {
+                clearInterval(healthCheckInterval);
+            }
+            
+            // Check health every 5 seconds
+            healthCheckInterval = setInterval(async () => {
+                if (!backendUrl) return;
+                
+                try {
+                    const response = await fetch(`${backendUrl}/health`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.status === 'ok') {
+                            showConnectionStatus('connected', 'Connected');
+                            updateLiveIndicator(true);
+                            reconnectAttempts = 0;
+                        } else {
+                            throw new Error('Invalid health status');
+                        }
+                    } else {
+                        throw new Error('Health check failed');
+                    }
+                } catch (error) {
+                    console.error('Health check failed:', error);
+                    showConnectionStatus('error', 'Lost connection to Raspberry Pi');
+                    updateLiveIndicator(false);
+                    
+                    // Try auto-reconnect
+                    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                        autoReconnect();
+                    }
+                }
+            }, 5000);
+        }
+
+        async function fetchStats() {
             try {
-                const statsResponse = await fetch(`${backendUrl}/api/stats`);
-                const statsData = await statsResponse.json();
+                const response = await fetch(`${backendUrl}/api/stats`);
+                const stats = await response.json();
                 
                 document.getElementById('status').textContent = 'ONLINE';
                 document.getElementById('status').classList.remove('offline');
-                document.getElementById('resolution').textContent = statsData.resolution;
+                document.getElementById('resolution').textContent = stats.resolution;
                 document.getElementById('resolution').classList.remove('offline');
-                document.getElementById('fps').textContent = statsData.fps;
+                document.getElementById('fps').textContent = stats.fps;
                 document.getElementById('fps').classList.remove('offline');
-                document.getElementById('bitrate').textContent = statsData.bitrate + ' Mbps';
+                document.getElementById('bitrate').textContent = stats.bitrate + ' Mbps';
                 document.getElementById('bitrate').classList.remove('offline');
-                document.getElementById('viewers').textContent = statsData.viewers;
+                document.getElementById('viewers').textContent = stats.viewers;
                 document.getElementById('viewers').classList.remove('offline');
                 
                 updateLiveIndicator(true);
                 
             } catch (error) {
-                console.error('Failed to fetch backend stats:', error);
-                updateConnectionStatus('error', 'Lost connection to backend');
+                console.error('Failed to fetch stats:', error);
                 setOfflineStats();
-                updateLiveIndicator(false);
             }
         }
 
+        async function autoReconnect() {
+            reconnectAttempts++;
+            showConnectionStatus('connecting', `Reconnecting (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
+            
+            const delay = 3000 * reconnectAttempts; // Exponential backoff
+            
+            setTimeout(async () => {
+                if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                    showConnectionStatus('error', 'Failed to reconnect. Please try manually.');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`${backendUrl}/health`);
+                    if (response.ok) {
+                        // Reconnect successful
+                        await connectToBackend();
+                    } else {
+                        // Try again
+                        autoReconnect();
+                    }
+                } catch (error) {
+                    // Try again
+                    autoReconnect();
+                }
+            }, delay);
+        }
+
         // UI Updates
-        function updateConnectionStatus(status, message) {
+        function showConnectionStatus(status, message) {
             const dot = document.getElementById('connection-dot');
             const text = document.getElementById('connection-status-text');
             
@@ -786,29 +779,6 @@
             document.getElementById('viewers').classList.add('offline');
         }
 
-        // Quality selector
-        document.querySelectorAll('.quality-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const quality = this.dataset.quality;
-                
-                // Update active button
-                document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                if (currentMode === 'webrtc') {
-                    // Restart WebRTC with new quality
-                    stopWebRTC();
-                    startWebRTC();
-                } else {
-                    // Change backend stream source
-                    const streamImg = document.getElementById('stream');
-                    streamImg.src = `${backendUrl}/stream/${quality}`;
-                }
-                
-                console.log('Quality changed to:', quality);
-            });
-        });
-
         // Controls
         function takeSnapshot() {
             console.log('Snapshot captured');
@@ -823,7 +793,7 @@
                 button.textContent = 'Start Recording';
                 showStatus('Recording stopped', 'success');
             } else {
-                button.textContent = 'Start Recording';
+                button.textContent = 'Stop Recording';
                 showStatus('Recording started', 'success');
             }
         }

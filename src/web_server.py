@@ -1,4 +1,5 @@
 from flask import Flask, Response, send_from_directory
+from flask_cors import CORS
 import time
 import logging
 
@@ -14,6 +15,20 @@ class WebServer:
         self.app = Flask(__name__,
                          static_folder='../static',
                          static_url_path='/static')
+
+        # Enable CORS for GitHub Pages and localhost
+        CORS(self.app, resources={
+            r"/*": {
+                "origins": [
+                    "https://kadelj61-oss.github.io",
+                    "http://localhost:*",
+                    "https://*.ngrok.io",
+                    "https://*.ngrok-free.app"
+                ],
+                "methods": ["GET", "POST", "OPTIONS"],
+                "allow_headers": ["Content-Type"]
+            }
+        })
 
         self.setup_routes()
 
