@@ -3,6 +3,7 @@ import time
 import multiprocessing as mp
 from queue import Full
 import logging
+import signal
 
 
 class CameraCapture:
@@ -99,5 +100,9 @@ class CameraCapture:
 
 def camera_process(config, frame_queue, control_queue):
     """Entry point for camera capture process"""
+    # Reset signal handlers to default for child process
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    signal.signal(signal.SIGTERM, signal.SIG_DFL)
+    
     capture = CameraCapture(config, frame_queue, control_queue)
     capture.run()

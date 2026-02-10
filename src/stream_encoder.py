@@ -3,6 +3,7 @@ import time
 import multiprocessing as mp
 from queue import Empty
 import logging
+import signal
 
 
 class StreamEncoder:
@@ -76,5 +77,9 @@ class StreamEncoder:
 
 def encoder_process(config, input_queue, output_queues, encoder_id):
     """Entry point for encoder process"""
+    # Reset signal handlers to default for child process
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    signal.signal(signal.SIGTERM, signal.SIG_DFL)
+    
     encoder = StreamEncoder(config, input_queue, output_queues, encoder_id)
     encoder.run()

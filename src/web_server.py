@@ -2,6 +2,7 @@ from flask import Flask, Response, send_from_directory
 from flask_cors import CORS
 import time
 import logging
+import signal
 
 
 class WebServer:
@@ -100,5 +101,9 @@ class WebServer:
 
 def webserver_process(config, stream_queues):
     """Entry point for web server process"""
+    # Reset signal handlers to default for child process
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    signal.signal(signal.SIGTERM, signal.SIG_DFL)
+    
     server = WebServer(config, stream_queues)
     server.run()
