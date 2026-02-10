@@ -29,3 +29,7 @@ processing:
 logging:
   level: INFO
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+monitoring:
+  health_check_interval: 5
+  restart_attempts: 3
