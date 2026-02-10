@@ -1,7 +1,7 @@
 import cv2
 import time
 import multiprocessing as mp
-from queue import Empty
+from queue import Empty, Full
 import logging
 import signal
 
@@ -64,8 +64,11 @@ class StreamEncoder:
                                 output_data, 
                                 block=False
                             )
-                        except:
-                            pass  # Queue full, skip
+                        except Full:
+                            # Queue full, skip frame (backpressure handling)
+                            pass
+                        except Exception as e:
+                            logging.error(f"Encoder {self.encoder_id}: Error putting frame to {quality_name} queue: {e}")
                 
             except Empty:
                 continue

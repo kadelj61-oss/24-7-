@@ -112,9 +112,9 @@ class ProcessManager:
         
         # Signal camera to stop
         try:
-            self.queues['camera_control'].put('stop')
-        except:
-            pass
+            self.queues['camera_control'].put('stop', block=False)
+        except Exception as e:
+            logging.warning(f"Could not send stop command to camera: {e}")
         
         # Wait for processes to finish
         for name, process in self.processes.items():
