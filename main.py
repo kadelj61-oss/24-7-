@@ -1,13 +1,9 @@
+#!/usr/bin/env python3
 import logging
 import yaml
 import sys
 from src.process_manager import ProcessManager
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
 
 def main():
     """Main entry point for the camera streaming server"""
@@ -16,22 +12,26 @@ def main():
         with open('config/config.yaml', 'r') as f:
             config = yaml.safe_load(f)
         
-        # Start the process manager
+        # Create process manager
         manager = ProcessManager(config)
+        
+        # Start all processes (signal handlers set up inside)
         manager.start_all()
         
-        # Keep running until interrupted
-        while True:
-            pass
+        # Keep main process alive and monitor health
+        manager.monitor_health()
             
     except KeyboardInterrupt:
-        logging.info("Shutting down...")
+        print("\nShutdown initiated...")
         if 'manager' in locals():
             manager.stop_all()
         sys.exit(0)
     except Exception as e:
         logging.error(f"Fatal error: {e}")
+        if 'manager' in locals():
+            manager.stop_all()
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
