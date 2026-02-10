@@ -1,0 +1,14 @@
+streaming:
+  formats:
+    - name: uhd
+      width: 3840
+      height: 2160
+      quality: 95
+    - name: hd
+      width: 1920
+      height: 1080
+      quality: 85
+    - name: sd
+      width: 1280
+      height: 720
+      quality: 75
