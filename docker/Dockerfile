@@ -24,15 +24,6 @@ RUN mkdir -p logs recordings
 
 # Expose port
 EXPOSE 8080
-# syntax=docker/dockerfile:1
-
-FROM python:3.9
-
-# Set the working directory
-WORKDIR /app
-
-# Copy the necessary files
-COPY . /app
 
 # Run the web server
 CMD ["python3", "-m", "src.web_server"]
