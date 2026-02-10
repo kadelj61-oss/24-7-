@@ -25,5 +25,5 @@ RUN mkdir -p logs recordings
 # Expose port
 EXPOSE 8080
 
-# Run the web server
-CMD ["python3", "-m", "src.web_server"]
+# Run application
+CMD ["python", "main.py"]
