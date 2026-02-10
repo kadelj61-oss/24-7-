@@ -26,4 +26,4 @@ RUN mkdir -p logs recordings
 EXPOSE 8080
 
 # Run application
-CMD ["python", "main.py"]
+CMD ["python", "-m","src.webserver"]
