@@ -720,7 +720,7 @@
             reconnectAttempts++;
             showConnectionStatus('connecting', `Reconnecting (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
             
-            const delay = 3000 * reconnectAttempts; // Exponential backoff
+            const delay = 3000 * Math.pow(2, reconnectAttempts - 1); // Exponential backoff
             
             setTimeout(async () => {
                 if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
