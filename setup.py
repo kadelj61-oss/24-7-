@@ -17,7 +17,7 @@ setup(
     description="24/7 live camera streaming server with multiprocessing",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/YOUR_USERNAME/camera-streaming-server",
+    url="https://github.com/kadelj61-oss/24-7-",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
