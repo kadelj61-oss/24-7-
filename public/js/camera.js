@@ -86,16 +86,22 @@ class CameraRecorder {
             const context = this.canvasElement.getContext('2d');
             context.drawImage(this.videoElement, 0, 0);
 
-            // Convert canvas to blob
+            // Convert canvas to blob with explicit JPEG format
             const blob = await new Promise(resolve => {
                 this.canvasElement.toBlob(resolve, 'image/jpeg', 0.95);
             });
 
-            // Create filename
+            // Create filename with timestamp
             const filename = `photo_${Date.now()}.jpg`;
 
+            // Create a proper File object with explicit MIME type
+            const file = new File([blob], filename, {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+            });
+
             // Upload the photo
-            await this.uploadFile(blob, filename, 'image/jpeg');
+            await this.uploadFile(file, filename, 'image/jpeg');
 
         } catch (error) {
             console.error('Photo capture error:', error);
@@ -196,9 +202,11 @@ class CameraRecorder {
             this.progressFill.textContent = '0%';
             this.uploadStatus.textContent = `Uploading ${filename}...`;
 
-            // Create FormData
+            // Create FormData and explicitly specify filename to ensure proper extension
             const formData = new FormData();
             formData.append('recording', blob, filename);
+
+            console.log(`Uploading file: ${filename}, MIME type: ${blob.type || mimetype}`);
 
             // Upload with fetch API
             const response = await fetch('/recordings', {
