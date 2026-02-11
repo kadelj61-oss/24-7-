@@ -505,7 +505,7 @@
                 
                 // Allow http only for localhost, otherwise require https
                 if (parsed.protocol === 'http:') {
-                    if (!parsed.hostname.match(/^(localhost|127\.0\.0\.1|\[::1\])$/)) {
+                    if (!parsed.hostname.match(/^(localhost|127\.0\.0\.1|::1)$/)) {
                         return { valid: false, error: 'Only HTTPS is allowed for remote servers. Use HTTP only for localhost.' };
                     }
                 } else if (parsed.protocol !== 'https:') {
