@@ -75,33 +75,36 @@ class CameraRecorder {
     }
 
     async capturePhoto() {
-        try {
-            this.showStatus('Capturing photo...', 'info');
+    try {
+        this.showStatus('Capturing photo...', 'info');
 
-            // Set canvas dimensions to match video
-            this.canvasElement.width = this.videoElement.videoWidth;
-            this.canvasElement.height = this.videoElement.videoHeight;
+        // Set canvas dimensions to match video
+        this.canvasElement.width = this.videoElement.videoWidth;
+        this.canvasElement.height = this.videoElement.videoHeight;
 
-            // Draw current video frame to canvas
-            const context = this.canvasElement.getContext('2d');
-            context.drawImage(this.videoElement, 0, 0);
+        // Draw current video frame to canvas
+        const context = this.canvasElement.getContext('2d');
+        context.drawImage(this.videoElement, 0, 0);
 
-            // Convert canvas to blob
-            const blob = await new Promise(resolve => {
-                this.canvasElement.toBlob(resolve, 'image/jpeg', 0.95);
-            });
+        // Convert canvas to blob with explicit File creation
+        const blob = await new Promise(resolve => {
+            this.canvasElement.toBlob(resolve, 'image/jpeg', 0.95);
+        });
 
-            // Create filename
-            const filename = `photo_${Date.now()}.jpg`;
+        // Create a proper File object (not just Blob)
+        const file = new File([blob], `photo_${Date.now()}.jpg`, {
+            type: 'image/jpeg',
+            lastModified: Date.now()
+        });
 
-            // Upload the photo
-            await this.uploadFile(blob, filename, 'image/jpeg');
+        // Upload the photo
+        await this.uploadFile(file, file.name, 'image/jpeg');
 
-        } catch (error) {
-            console.error('Photo capture error:', error);
-            this.showStatus(`Failed to capture photo: ${error.message}`, 'error');
-        }
+    } catch (error) {
+        console.error('Photo capture error:', error);
+        this.showStatus(`Failed to capture photo: ${error.message}`, 'error');
     }
+}
 
     async startRecording() {
         try {
