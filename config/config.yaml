@@ -6,7 +6,7 @@ camera:
 
 streaming:
   host: 0.0.0.0
-  port: ${PORT:-8080}
+  port: 8080
   formats:
     - name: uhd
       width: 3840
