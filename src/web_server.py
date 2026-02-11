@@ -1,115 +1,57 @@
-from flask import Flask, Response, send_from_directory
-from flask_cors import CORS
-import time
-import logging
-import signal
+from flask import Flask, Response, request, jsonify
+import io
+from collections import deque
+from threading import Lock
 
+app = Flask(__name__)
 
-class WebServer:
-    def __init__(self, config, stream_queues):
-        self.config = config
-        self.stream_queues = stream_queues
-        self.start_time = time.time()
-        self.active_clients = set()
+# Store frames in memory (last 30 frames per quality)
+frame_buffers = {
+    'hd': deque(maxlen=30),
+    'sd': deque(maxlen=30),
+    'uhd': deque(maxlen=30)
+}
+buffer_lock = Lock()
 
-        # Set up Flask with static folder
-        self.app = Flask(__name__,
-                         static_folder='../static',
-                         static_url_path='/static')
-
-        # Enable CORS for GitHub Pages and localhost
-        CORS(self.app, resources={
-            r"/*": {
-                "origins": [
-                    "https://kadelj61-oss.github.io",
-                    r"http://localhost:\d+",
-                    r"https://.*\.ngrok\.io",
-                    r"https://.*\.ngrok-free\.app"
-                ],
-                "methods": ["GET", "POST", "OPTIONS"],
-                "allow_headers": ["Content-Type"]
-            }
-        })
-
-        self.setup_routes()
-
-    def setup_routes(self):
-        """Setup Flask routes"""
-
-        # Serve index.html as homepage
-        @self.app.route('/')
-        def index():
-            return send_from_directory('../static', 'index.html')
-
-        # Serve other static files
-        @self.app.route('/static/<path:filename>')
-        def static_files(filename):
-            return send_from_directory('../static', filename)
-
-        # MJPEG stream endpoints
-        @self.app.route('/stream/<quality>')
-        def stream(quality):
-            """MJPEG stream endpoint"""
-            return Response(
-                self.generate_stream(quality),
-                mimetype='multipart/x-mixed-replace; boundary=frame'
-            )
-
-        # Health check endpoint
-        @self.app.route('/health')
-        def health():
-            return {
-                'status': 'ok',
-                'timestamp': time.time(),
-                'uptime': time.time() - self.start_time
-            }
-
-        # API endpoints
-        @self.app.route('/api/stats')
-        def stats():
-            return {
-                'fps': 30,
-                'bitrate': 4.5,
-                'resolution': '1920x1080',
-                'viewers': len(self.active_clients)
-            }
-
-    def generate_stream(self, quality='hd'):
-        """Generator for MJPEG stream"""
-        if quality not in self.stream_queues:
-            quality = 'hd'
-
-        queue = self.stream_queues[quality]
-
-        while True:
-            try:
-                frame_data = queue.get(timeout=1.0)
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' +
-                       frame_data['data'] + b'\r\n')
-            except Exception:
-                continue
-
-    def run(self):
-        """Start web server"""
-        host = self.config['streaming']['host']
-        port = self.config['streaming']['port']
-
-        logging.info(f"Starting web server on {host}:{port}")
-        self.app.run(
-            host=host,
-            port=port,
-            debug=False,
-            threaded=True
-        )
-
-
-
-def webserver_process(config, stream_queues):
-    """Entry point for web server process"""
-    # Reset signal handlers to default for child process
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
-    signal.signal(signal.SIGTERM, signal.SIG_DFL)
+@app.route('/upload/<quality>', methods=['POST'])
+def upload_frame(quality):
+    """Receive frames from local camera"""
+    if quality not in frame_buffers:
+        return jsonify({'error': 'Invalid quality'}), 400
     
-    server = WebServer(config, stream_queues)
-    server.run()
+    frame_data = request.data
+    if not frame_data:
+        return jsonify({'error': 'No frame data'}), 400
+    
+    with buffer_lock:
+        frame_buffers[quality].append(frame_data)
+    
+    return jsonify({'status': 'ok', 'buffer_size': len(frame_buffers[quality])}), 200
+
+@app.route('/stream/<quality>')
+def stream(quality):
+    """Serve the stream to viewers"""
+    if quality not in frame_buffers:
+        return "Invalid quality", 404
+    
+    def generate():
+        while True:
+            with buffer_lock:
+                if frame_buffers[quality]:
+                    frame = frame_buffers[quality][-1]  # Get latest frame
+                    yield (b'--frame\r\n'
+                           b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            time.sleep(0.033)  # ~30fps
+    
+    return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/')
+def index():
+    return """
+    <html>
+    <body>
+    <h1>24/7 Camera Stream</h1>
+    <img src="/stream/hd" width="1280">
+    </body>
+    </html>
+    """
