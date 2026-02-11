@@ -22,6 +22,14 @@ class WebServer:
         # Configure Google Cloud Storage
         self.gcs_bucket_name = os.environ.get('GCS_BUCKET_NAME')
         self.gcs_project_id = os.environ.get('GCS_PROJECT_ID')
+        
+        # Initialize GCS client if configured
+        self.storage_client = None
+        if self.gcs_bucket_name and self.gcs_project_id:
+            try:
+                self.storage_client = storage.Client(project=self.gcs_project_id)
+            except Exception as e:
+                logging.warning(f"Failed to initialize GCS client: {e}")
 
         # Set up Flask with static folder
         self.app = Flask(__name__,
@@ -44,14 +52,20 @@ class WebServer:
 
         self.setup_routes()
 
+    def _get_timestamp_ms(self):
+        """Get current UTC timestamp in milliseconds"""
+        return int(datetime.datetime.now(datetime.timezone.utc).timestamp() * 1000)
+
     def upload_to_gcs(self, file_content, filename, content_type):
         """Upload file to Google Cloud Storage"""
         try:
-            storage_client = storage.Client(project=self.gcs_project_id)
-            bucket = storage_client.bucket(self.gcs_bucket_name)
+            if not self.storage_client:
+                raise Exception("GCS client not initialized")
+            
+            bucket = self.storage_client.bucket(self.gcs_bucket_name)
             
             # Create blob with timestamp
-            timestamp = int(datetime.datetime.now(datetime.timezone.utc).timestamp() * 1000)
+            timestamp = self._get_timestamp_ms()
             blob_name = f"recordings/{timestamp}-{filename}"
             blob = bucket.blob(blob_name)
             
@@ -135,8 +149,9 @@ class WebServer:
                 file_content = file.read()
                 
                 # Upload to GCS
-                if self.gcs_bucket_name and self.gcs_project_id:
+                if self.gcs_bucket_name and self.gcs_project_id and self.storage_client:
                     result = self.upload_to_gcs(file_content, file.filename, file.content_type)
+                    timestamp = self._get_timestamp_ms()
                     return jsonify({
                         'success': True,
                         'message': 'File uploaded successfully',
@@ -145,14 +160,14 @@ class WebServer:
                             'url': result['url'],
                             'size': result['size'],
                             'mimetype': result['mimetype'],
-                            'uploadedAt': datetime.datetime.now(datetime.timezone.utc).isoformat()
+                            'uploadedAt': datetime.datetime.fromtimestamp(timestamp / 1000, datetime.timezone.utc).isoformat()
                         }
                     }), 201
                 else:
                     # Fallback: save locally if GCS not configured
                     upload_folder = 'recordings'
                     os.makedirs(upload_folder, exist_ok=True)
-                    timestamp = int(datetime.datetime.now(datetime.timezone.utc).timestamp() * 1000)
+                    timestamp = self._get_timestamp_ms()
                     filename = f"{timestamp}-{secure_filename(file.filename)}"
                     filepath = os.path.join(upload_folder, filename)
                     
@@ -167,7 +182,7 @@ class WebServer:
                             'url': f'/recordings/{filename}',
                             'size': len(file_content),
                             'mimetype': file.content_type,
-                            'uploadedAt': datetime.datetime.now(datetime.timezone.utc).isoformat()
+                            'uploadedAt': datetime.datetime.fromtimestamp(timestamp / 1000, datetime.timezone.utc).isoformat()
                         }
                     }), 201
                     
