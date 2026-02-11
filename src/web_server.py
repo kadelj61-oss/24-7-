@@ -96,7 +96,13 @@ class WebServer:
         port = self.config['streaming']['port']
 
         logging.info(f"Starting web server on {host}:{port}")
-        self.app.run(host=host, port=port, debug=False, threaded=True)
+      self.app.run(
+    host=host, 
+    port=port, 
+    debug=False, 
+    threaded=True,
+    ssl_context=('cert.pem', 'key.pem')
+)
 
 
 def webserver_process(config, stream_queues):
