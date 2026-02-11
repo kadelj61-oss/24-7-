@@ -1,9 +1,10 @@
 camera:
-  source: 0  # 0 for webcam, or RTSP URL for IP cameras
+  source: 0  # For built-in/USB camera
+  # OR
+  source: "rtsp://username:password@ip:port/stream"  # For IP camera
+  width: 1920
+  height: 1080
   fps: 30
-  resolution: [1920, 1080]
-  reconnect_delay: 5
-  max_reconnect_attempts: 10
 
 streaming:
   host: 0.0.0.0
