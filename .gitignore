@@ -50,3 +50,11 @@ config/config.local.yaml
 # Test coverage
 .coverage
 htmlcov/
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+.env
+*.tgz
