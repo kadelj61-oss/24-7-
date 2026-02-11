@@ -2,6 +2,7 @@
 import logging
 import yaml
 import sys
+import os
 from src.process_manager import ProcessManager
 
 
@@ -11,16 +12,22 @@ def main():
         # Load configuration
         with open('config/config.yaml', 'r') as f:
             config = yaml.safe_load(f)
+
+        # Override port with Railway environment variable if set
+        port = int(os.getenv('PORT', config['streaming']['port']))
+        config['streaming']['port'] = port
         
+        logging.info(f"Using port: {port}")
+
         # Create process manager
         manager = ProcessManager(config)
-        
+
         # Start all processes (signal handlers set up inside)
         manager.start_all()
-        
+
         # Keep main process alive and monitor health
         manager.monitor_health()
-            
+
     except KeyboardInterrupt:
         print("\nShutdown initiated...")
         if 'manager' in locals():
