@@ -287,89 +287,15 @@ To run the backend automatically on boot:
 - ✅ Safari (iOS/macOS)
 - ✅ All modern browsers with MJPEG support
 
-## Recording API Endpoint
-
-The application now includes a `/recordings` API endpoint for uploading photos and videos to Google Cloud Storage.
-
-### Setup for Recording Feature
-
-1. **Install Node.js Dependencies:**
-   ```bash
-   npm install
-   ```
-
-2. **Configure Google Cloud Storage:**
-   - Create a GCP project and enable Cloud Storage API
-   - Create a storage bucket
-   - Create a service account with Storage Admin role
-   - Download the service account JSON key file
-   - Copy `.env.example` to `.env` and configure:
-     ```bash
-     cp .env.example .env
-     ```
-   - Edit `.env` with your GCS credentials:
-     ```
-     GCS_PROJECT_ID=your-project-id
-     GCS_BUCKET_NAME=your-bucket-name
-     GCS_KEYFILE_PATH=./path/to/service-account-key.json
-     PORT=3000
-     MAX_FILE_SIZE=104857600
-     ```
-
-3. **Start the Recording Server:**
-   ```bash
-   npm start
-   ```
-   The recording interface will be available at `http://localhost:3000`
-
-### Recording API Usage
-
-**POST /recordings**
-- Upload a photo or video file
-- Content-Type: `multipart/form-data`
-- Field name: `recording`
-- Supported formats: MP4, WebM, JPEG, PNG
-- Max file size: 100MB (configurable via `MAX_FILE_SIZE`)
-
-Example using curl:
-```bash
-curl -X POST http://localhost:3000/recordings \
-  -F "recording=@photo.jpg"
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "File uploaded successfully",
-  "data": {
-    "filename": "recordings/1234567890-photo.jpg",
-    "url": "https://storage.googleapis.com/bucket-name/recordings/1234567890-photo.jpg",
-    "size": 1234567,
-    "mimetype": "image/jpeg",
-    "uploadedAt": "2026-02-11T03:47:32.186Z"
-  }
-}
-```
-
-### Browser Camera Interface
-
-The application includes a web-based camera interface at `http://localhost:3000` that allows you to:
-- Access your browser's camera and microphone
-- Capture photos using the Canvas API
-- Record videos using MediaRecorder API
-- Automatically upload captured media to Google Cloud Storage
-- View uploaded recordings with direct links
-
 ## Future Enhancements
 
+- [ ] Recording functionality
+- [ ] Snapshot capture to storage
 - [ ] Multiple camera support
 - [ ] Mobile-optimized UI
 - [ ] Stream authentication
 - [ ] Motion detection alerts
-- [x] Recording functionality
-- [x] Snapshot capture to storage
-- [x] Cloud storage integration
+- [ ] Cloud storage integration
 
 ## License
 
