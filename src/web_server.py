@@ -100,9 +100,9 @@ class WebServer:
     host=host, 
     port=port, 
     debug=False, 
-    threaded=True,
-    ssl_context=('cert.pem', 'key.pem')
+    threaded=True
 )
+
 
 
 def webserver_process(config, stream_queues):
