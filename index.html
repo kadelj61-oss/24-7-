@@ -45,69 +45,22 @@
             font-size: 1.1em;
         }
 
-        .config-panel {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 20px;
-        }
-
-        .config-panel h3 {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .url-input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .url-input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.95em;
-            color: #ddd;
-        }
-
-        .url-input {
-            flex: 1;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #fff;
-            border-radius: 8px;
-            font-size: 0.95em;
-        }
-
-        .url-input::placeholder {
-            color: #888;
-        }
-
-        .connect-btn, .disconnect-btn {
-            padding: 12px 30px;
-            width: auto;
-        }
-
-        .disconnect-btn {
-            background: rgba(255, 0, 0, 0.3);
-        }
-
-        .disconnect-btn:hover {
-            background: rgba(255, 0, 0, 0.5);
-        }
-
         .connection-status {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px 15px;
+            padding: 15px 20px;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            margin-bottom: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .connection-status:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #00d4ff;
         }
 
         .status-dot {
@@ -131,53 +84,14 @@
             background: #ff0000;
         }
 
-        .help-text {
-            margin-top: 15px;
-            padding: 15px;
-            background: rgba(0, 212, 255, 0.05);
-            border-radius: 8px;
-            font-size: 0.9em;
+        .status-dot.disconnected {
+            background: #888;
         }
 
-        .help-text details {
-            cursor: pointer;
-        }
-
-        .help-text summary {
-            font-weight: bold;
-            margin-bottom: 10px;
-            user-select: none;
-        }
-
-        .help-text ol {
-            margin-left: 20px;
-            margin-top: 10px;
-        }
-
-        .help-text li {
-            margin-bottom: 8px;
-            color: #ccc;
-        }
-
-        .help-text code {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-            color: #00d4ff;
-        }
-
-        .permission-message {
-            padding: 15px;
-            background: rgba(0, 212, 255, 0.1);
-            border-left: 4px solid #00d4ff;
-            border-radius: 5px;
-            margin-top: 15px;
-            display: none;
-        }
-
-        .permission-message.show {
-            display: block;
+        .connection-info {
+            font-size: 0.85em;
+            color: #888;
+            margin-top: 2px;
         }
 
         .main-content {
@@ -409,37 +323,12 @@
             <p class="subtitle">Raspberry Pi USB Camera Streaming</p>
         </header>
 
-        <!-- Raspberry Pi Connection Configuration -->
-        <div class="config-panel">
-            <h3>🔧 Raspberry Pi Connection</h3>
-            <div class="connection-status" id="connection-status">
-                <div class="status-dot" id="connection-dot"></div>
-                <div id="connection-status-text">Not Connected</div>
-            </div>
-            <div class="url-input-group">
-                <label for="backend-url">Backend URL (ngrok or public IP):</label>
-                <div style="display: flex; gap: 10px;">
-                    <input 
-                        type="text" 
-                        class="url-input" 
-                        id="backend-url" 
-                        placeholder="https://abc123.ngrok.io"
-                    />
-                    <button class="connect-btn" id="connect-btn">Connect</button>
-                    <button class="disconnect-btn" id="disconnect-btn" style="display: none;">Disconnect</button>
-                </div>
-            </div>
-            <div class="help-text">
-                <details>
-                    <summary>📖 Setup Instructions</summary>
-                    <ol>
-                        <li>Connect USB camera to Raspberry Pi</li>
-                        <li>Run: <code>python3 main.py</code> on Raspberry Pi</li>
-                        <li>Run: <code>ngrok http 8080</code> on Raspberry Pi</li>
-                        <li>Copy the ngrok URL (e.g., https://abc123.ngrok.io)</li>
-                        <li>Paste URL above and click Connect</li>
-                    </ol>
-                </details>
+        <!-- Connection Status -->
+        <div class="connection-status" id="connection-status" onclick="manualReconnect()">
+            <div class="status-dot" id="connection-dot"></div>
+            <div>
+                <div id="connection-status-text">Connecting...</div>
+                <div class="connection-info" id="connection-info">Click to reconnect</div>
             </div>
         </div>
 
@@ -506,33 +395,44 @@
 
     <script>
         // State management
-        let backendUrl = localStorage.getItem('backendUrl') || '';
+        let backendUrl = '';
         let statsInterval = null;
         let healthCheckInterval = null;
         let reconnectAttempts = 0;
         const MAX_RECONNECT_ATTEMPTS = 5;
         let currentQuality = 'hd';
 
+        // Backend URL detection
+        function detectBackendUrl() {
+            // Try multiple detection strategies in order
+            const candidates = [];
+            
+            // Strategy 1: localhost (for local development)
+            candidates.push('http://localhost:8080');
+            
+            // Strategy 2: Same origin (if hosted on the same server)
+            if (window.location.protocol && window.location.hostname) {
+                const sameOrigin = `${window.location.protocol}//${window.location.hostname}:8080`;
+                if (sameOrigin !== candidates[0]) {
+                    candidates.push(sameOrigin);
+                }
+            }
+            
+            // Strategy 3: Current host with default port 8080
+            if (window.location.host) {
+                const currentHost = `${window.location.protocol}//${window.location.host}`;
+                if (!candidates.includes(currentHost)) {
+                    candidates.push(currentHost);
+                }
+            }
+            
+            return candidates;
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            // Load saved backend URL
-            if (backendUrl) {
-                document.getElementById('backend-url').value = backendUrl;
-                // Auto-connect if we have a saved URL
-                connectToBackend();
-            } else {
-                setOfflineStats();
-            }
-
-            // Set up event listeners
-            document.getElementById('connect-btn').addEventListener('click', connectToBackend);
-            document.getElementById('disconnect-btn').addEventListener('click', disconnectBackend);
-            
-            // Save backend URL on input
-            document.getElementById('backend-url').addEventListener('input', (e) => {
-                backendUrl = e.target.value.trim();
-                localStorage.setItem('backendUrl', backendUrl);
-            });
+            // Start auto-connection on page load
+            autoDetectAndConnect();
 
             // Quality selector
             document.querySelectorAll('.quality-btn').forEach(btn => {
@@ -551,17 +451,46 @@
             });
         });
 
+        // Auto-detect backend and connect
+        async function autoDetectAndConnect() {
+            const candidates = detectBackendUrl();
+            showConnectionStatus('connecting', `Auto-detecting backend...`, '');
+            
+            for (const url of candidates) {
+                try {
+                    console.log(`Trying backend URL: ${url}`);
+                    const healthResponse = await fetch(`${url}/health`, {
+                        method: 'GET',
+                        mode: 'cors'
+                    });
+                    
+                    if (healthResponse.ok) {
+                        const healthData = await healthResponse.json();
+                        if (healthData.status === 'ok') {
+                            backendUrl = url;
+                            console.log(`Connected to backend: ${url}`);
+                            await connectToBackend();
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    console.log(`Failed to connect to ${url}:`, error.message);
+                }
+            }
+            
+            // All candidates failed
+            showConnectionStatus('error', 'Could not auto-detect backend', 'Click to retry');
+            setOfflineStats();
+        }
+
         // Backend connection
         async function connectToBackend() {
-            const url = document.getElementById('backend-url').value.trim();
-            if (!url) {
-                showConnectionStatus('error', 'Please enter a backend URL');
+            if (!backendUrl) {
+                showConnectionStatus('error', 'No backend URL available', 'Click to retry');
                 return;
             }
 
-            backendUrl = url;
-            localStorage.setItem('backendUrl', backendUrl);
-            showConnectionStatus('connecting', 'Connecting...');
+            showConnectionStatus('connecting', 'Connecting...', '');
 
             try {
                 // Test health endpoint
@@ -578,13 +507,9 @@
                 
                 if (healthData.status === 'ok') {
                     // Connection successful
-                    showConnectionStatus('connected', 'Connected');
+                    showConnectionStatus('connected', 'Connected', backendUrl);
                     updateLiveIndicator(true);
                     reconnectAttempts = 0;
-
-                    // Show disconnect button, hide connect button
-                    document.getElementById('connect-btn').style.display = 'none';
-                    document.getElementById('disconnect-btn').style.display = 'block';
 
                     // Load stream
                     updateStreamSource();
@@ -598,7 +523,7 @@
 
             } catch (error) {
                 console.error('Backend connection error:', error);
-                showConnectionStatus('error', 'Cannot connect to Raspberry Pi. Check URL and CORS settings.');
+                showConnectionStatus('error', 'Connection failed', 'Click to retry');
                 updateLiveIndicator(false);
                 setOfflineStats();
                 
@@ -609,32 +534,11 @@
             }
         }
 
-        function disconnectBackend() {
-            // Stop all intervals
-            if (statsInterval) {
-                clearInterval(statsInterval);
-                statsInterval = null;
-            }
-            if (healthCheckInterval) {
-                clearInterval(healthCheckInterval);
-                healthCheckInterval = null;
-            }
-
-            // Clear stream
-            const streamImg = document.getElementById('stream');
-            streamImg.src = '';
-            streamImg.style.display = 'none';
-
-            // Update UI
-            showConnectionStatus('disconnected', 'Disconnected');
-            updateLiveIndicator(false);
-            setOfflineStats();
-
-            // Show connect button, hide disconnect button
-            document.getElementById('connect-btn').style.display = 'block';
-            document.getElementById('disconnect-btn').style.display = 'none';
-
+        // Manual reconnect triggered by clicking on status
+        function manualReconnect() {
             reconnectAttempts = 0;
+            backendUrl = ''; // Clear URL to force re-detection
+            autoDetectAndConnect();
         }
 
         function updateStreamSource() {
@@ -671,7 +575,7 @@
                     if (response.ok) {
                         const data = await response.json();
                         if (data.status === 'ok') {
-                            showConnectionStatus('connected', 'Connected');
+                            showConnectionStatus('connected', 'Connected', backendUrl);
                             updateLiveIndicator(true);
                             reconnectAttempts = 0;
                         } else {
@@ -682,7 +586,7 @@
                     }
                 } catch (error) {
                     console.error('Health check failed:', error);
-                    showConnectionStatus('error', 'Lost connection to Raspberry Pi');
+                    showConnectionStatus('error', 'Connection lost', 'Reconnecting...');
                     updateLiveIndicator(false);
                     
                     // Try auto-reconnect
@@ -719,12 +623,12 @@
 
         async function autoReconnect() {
             if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-                showConnectionStatus('error', 'Failed to reconnect. Please try manually.');
+                showConnectionStatus('error', 'Failed to reconnect', 'Click to retry');
                 return;
             }
 
             reconnectAttempts++;
-            showConnectionStatus('connecting', `Reconnecting (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
+            showConnectionStatus('connecting', `Reconnecting...`, `Attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`);
             
             const delay = 3000 * Math.pow(2, reconnectAttempts - 1); // Exponential backoff
             
@@ -746,12 +650,14 @@
         }
 
         // UI Updates
-        function showConnectionStatus(status, message) {
+        function showConnectionStatus(status, message, info) {
             const dot = document.getElementById('connection-dot');
             const text = document.getElementById('connection-status-text');
+            const infoEl = document.getElementById('connection-info');
             
             dot.className = 'status-dot ' + status;
             text.textContent = message;
+            infoEl.textContent = info;
         }
 
         function updateLiveIndicator(isLive) {
@@ -794,7 +700,7 @@
                 button.textContent = 'Start Recording';
                 showStatus('Recording stopped', 'success');
             } else {
-                button.textContent = 'Stop Recording';
+                button.textContent = 'Start Recording';
                 showStatus('Recording started', 'success');
             }
         }
