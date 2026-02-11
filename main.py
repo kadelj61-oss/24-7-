@@ -17,6 +17,11 @@ def main():
         port = int(os.getenv('PORT', config['streaming']['port']))
         config['streaming']['port'] = port
         
+        # Setup logging before creating manager
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
         logging.info(f"Using port: {port}")
 
         # Create process manager
