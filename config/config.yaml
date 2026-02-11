@@ -1,9 +1,11 @@
 camera:
   source: 0  # Built-in camera
-  width: 1920
-  height: 1080
+  resolution:
+    - 1920
+    - 1080
   fps: 30
   reconnect_delay: 5
+
 
 streaming:
   host: 0.0.0.0
