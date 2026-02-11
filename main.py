@@ -9,6 +9,12 @@ from src.process_manager import ProcessManager
 def main():
     """Main entry point for the camera streaming server"""
     try:
+        # DEBUG: Print all environment variables
+        print("=== ENVIRONMENT VARIABLES ===")
+        for key, value in os.environ.items():
+            print(f"{key} = {value}")
+        print("=============================")
+        
         # Load configuration
         with open('config/config.yaml', 'r') as f:
             config = yaml.safe_load(f)
@@ -16,6 +22,8 @@ def main():
         # Override port with Railway environment variable if set
         port = int(os.getenv('PORT', config['streaming']['port']))
         config['streaming']['port'] = port
+
+        
 
         # Setup logging before creating manager
         logging.basicConfig(
