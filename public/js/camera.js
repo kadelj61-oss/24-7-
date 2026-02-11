@@ -101,7 +101,7 @@ class CameraRecorder {
             });
 
             // Upload the photo
-            await this.uploadFile(file, filename, 'image/jpeg');
+            await this.uploadFile(file, filename);
 
         } catch (error) {
             console.error('Photo capture error:', error);
@@ -156,8 +156,14 @@ class CameraRecorder {
                 const extension = selectedMimeType.includes('webm') ? 'webm' : 'mp4';
                 const filename = `video_${Date.now()}.${extension}`;
 
+                // Create a proper File object with explicit MIME type
+                const file = new File([blob], filename, {
+                    type: selectedMimeType,
+                    lastModified: Date.now()
+                });
+
                 // Upload the video
-                await this.uploadFile(blob, filename, selectedMimeType);
+                await this.uploadFile(file, filename);
 
                 this.recordedChunks = [];
             };
@@ -194,7 +200,7 @@ class CameraRecorder {
         }
     }
 
-    async uploadFile(blob, filename, mimetype) {
+    async uploadFile(file, filename) {
         try {
             // Show upload progress
             this.uploadProgress.classList.add('show');
@@ -204,9 +210,9 @@ class CameraRecorder {
 
             // Create FormData and explicitly specify filename to ensure proper extension
             const formData = new FormData();
-            formData.append('recording', blob, filename);
+            formData.append('recording', file, filename);
 
-            console.log(`Uploading file: ${filename}, MIME type: ${blob.type || mimetype}`);
+            console.log(`Uploading file: ${filename}, MIME type: ${file.type}`);
 
             // Upload with fetch API
             const response = await fetch('/recordings', {
