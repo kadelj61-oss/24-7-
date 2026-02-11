@@ -75,36 +75,54 @@ class CameraRecorder {
     }
 
     async capturePhoto() {
-    try {
-        this.showStatus('Capturing photo...', 'info');
+        try {
+            this.showStatus('Capturing photo...', 'info');
 
-        // Set canvas dimensions to match video
-        this.canvasElement.width = this.videoElement.videoWidth;
-        this.canvasElement.height = this.videoElement.videoHeight;
+            // Set canvas dimensions to match video
+            this.canvasElement.width = this.videoElement.videoWidth;
+            this.canvasElement.height = this.videoElement.videoHeight;
 
-        // Draw current video frame to canvas
-        const context = this.canvasElement.getContext('2d');
-        context.drawImage(this.videoElement, 0, 0);
+            // Draw current video frame to canvas
+            const context = this.canvasElement.getContext('2d');
+            context.drawImage(this.videoElement, 0, 0);
 
-        // Convert canvas to blob with explicit File creation
-        const blob = await new Promise(resolve => {
-            this.canvasElement.toBlob(resolve, 'image/jpeg', 0.95);
-        });
+            // Convert canvas to blob with explicit JPEG format
+            const blob = await new Promise((resolve, reject) => {
+                this.canvasElement.toBlob(
+                    (blob) => {
+                        if (blob) {
+                            resolve(blob);
+                        } else {
+                            reject(new Error('Failed to create blob from canvas'));
+                        }
+                    },
+                    'image/jpeg',
+                    0.95
+                );
+            });
 
-        // Create a proper File object (not just Blob)
-        const file = new File([blob], `photo_${Date.now()}.jpg`, {
-            type: 'image/jpeg',
-            lastModified: Date.now()
-        });
+            // Create a proper File object from the blob
+            const timestamp = Date.now();
+            const filename = `photo_${timestamp}.jpg`;
+            const file = new File([blob], filename, {
+                type: 'image/jpeg',
+                lastModified: timestamp
+            });
 
-        // Upload the photo
-        await this.uploadFile(file, file.name, 'image/jpeg');
+            console.log('Photo captured:', {
+                filename: file.name,
+                type: file.type,
+                size: file.size
+            });
 
-    } catch (error) {
-        console.error('Photo capture error:', error);
-        this.showStatus(`Failed to capture photo: ${error.message}`, 'error');
+            // Upload the photo
+            await this.uploadFile(file, file.name, file.type);
+
+        } catch (error) {
+            console.error('Photo capture error:', error);
+            this.showStatus(`Failed to capture photo: ${error.message}`, 'error');
+        }
     }
-}
 
     async startRecording() {
         try {
@@ -203,6 +221,12 @@ class CameraRecorder {
             const formData = new FormData();
             formData.append('recording', blob, filename);
 
+            console.log('Uploading:', {
+                filename: filename,
+                type: mimetype,
+                size: blob.size
+            });
+
             // Upload with fetch API
             const response = await fetch('/recordings', {
                 method: 'POST',
@@ -211,12 +235,14 @@ class CameraRecorder {
 
             if (!response.ok) {
                 const error = await response.json();
-                throw new Error(error.error || 'Upload failed');
+                console.error('Upload failed:', error);
+                throw new Error(error.error || `Upload failed with status ${response.status}`);
             }
 
             const result = await response.json();
+            console.log('Upload success:', result);
 
-            // Simulate progress (since we can't track actual upload progress with fetch easily)
+            // Update progress
             this.progressFill.style.width = '100%';
             this.progressFill.textContent = '100%';
             this.uploadStatus.textContent = 'Upload complete!';

@@ -8,6 +8,9 @@ numpy>=1.24.0
 Pillow>=10.0.0
 python-socketio>=5.9.0
 
+# Google Cloud Storage
+google-cloud-storage>=2.10.0
+
 # Optional: For production
 gunicorn>=21.2.0
 eventlet>=0.33.3

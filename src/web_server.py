@@ -1,8 +1,12 @@
-from flask import Flask, Response, send_from_directory
+from flask import Flask, Response, send_from_directory, request, jsonify
 from flask_cors import CORS
 import time
 import logging
 import signal
+import os
+import datetime
+from google.cloud import storage
+from werkzeug.utils import secure_filename
 
 
 class WebServer:
@@ -11,6 +15,10 @@ class WebServer:
         self.stream_queues = stream_queues
         self.start_time = time.time()
         self.active_clients = set()
+        
+        # Configure Google Cloud Storage
+        self.gcs_bucket_name = os.environ.get('GCS_BUCKET_NAME')
+        self.gcs_project_id = os.environ.get('GCS_PROJECT_ID')
 
         # Set up Flask with static folder
         self.app = Flask(__name__,
@@ -32,6 +40,32 @@ class WebServer:
         })
 
         self.setup_routes()
+
+    def upload_to_gcs(self, file_content, filename, content_type):
+        """Upload file to Google Cloud Storage"""
+        try:
+            storage_client = storage.Client(project=self.gcs_project_id)
+            bucket = storage_client.bucket(self.gcs_bucket_name)
+            
+            # Create blob with timestamp
+            timestamp = int(datetime.datetime.now().timestamp() * 1000)
+            blob_name = f"recordings/{timestamp}-{filename}"
+            blob = bucket.blob(blob_name)
+            
+            # Upload
+            blob.upload_from_string(file_content, content_type=content_type)
+            
+            # Make public
+            blob.make_public()
+            
+            return {
+                'filename': blob_name,
+                'url': blob.public_url,
+                'size': len(file_content),
+                'mimetype': content_type
+            }
+        except Exception as e:
+            raise Exception(f"GCS upload failed: {str(e)}")
 
     def setup_routes(self):
         """Setup Flask routes"""
@@ -73,6 +107,70 @@ class WebServer:
                 'resolution': '1920x1080',
                 'viewers': len(self.active_clients)
             }
+
+        # Recordings upload endpoint
+        @self.app.route('/recordings', methods=['POST'])
+        def upload_recording():
+            """Handle photo/video uploads"""
+            try:
+                if 'recording' not in request.files:
+                    return jsonify({'success': False, 'error': 'No file uploaded'}), 400
+                
+                file = request.files['recording']
+                
+                if file.filename == '':
+                    return jsonify({'success': False, 'error': 'No file selected'}), 400
+                
+                # Validate file type
+                allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'video/mp4', 'video/webm']
+                if file.content_type not in allowed_types:
+                    return jsonify({
+                        'success': False, 
+                        'error': f'Invalid file type: {file.content_type}. Allowed: {", ".join(allowed_types)}'
+                    }), 400
+                
+                # Read file content
+                file_content = file.read()
+                
+                # Upload to GCS
+                if self.gcs_bucket_name and self.gcs_project_id:
+                    result = self.upload_to_gcs(file_content, file.filename, file.content_type)
+                    return jsonify({
+                        'success': True,
+                        'message': 'File uploaded successfully',
+                        'data': {
+                            'filename': result['filename'],
+                            'url': result['url'],
+                            'size': result['size'],
+                            'mimetype': result['mimetype'],
+                            'uploadedAt': datetime.datetime.now().isoformat()
+                        }
+                    }), 201
+                else:
+                    # Fallback: save locally if GCS not configured
+                    upload_folder = 'recordings'
+                    os.makedirs(upload_folder, exist_ok=True)
+                    timestamp = int(datetime.datetime.now().timestamp() * 1000)
+                    filename = f"{timestamp}-{secure_filename(file.filename)}"
+                    filepath = os.path.join(upload_folder, filename)
+                    
+                    with open(filepath, 'wb') as f:
+                        f.write(file_content)
+                    
+                    return jsonify({
+                        'success': True,
+                        'message': 'File saved locally (GCS not configured)',
+                        'data': {
+                            'filename': filename,
+                            'url': f'/recordings/{filename}',
+                            'size': len(file_content),
+                            'mimetype': file.content_type,
+                            'uploadedAt': datetime.datetime.now().isoformat()
+                        }
+                    }), 201
+                    
+            except Exception as e:
+                return jsonify({'success': False, 'error': str(e)}), 500
 
     def generate_stream(self, quality='hd'):
         """Generator for MJPEG stream"""
