@@ -96,8 +96,8 @@ class WebServer:
         port = self.config['streaming']['port']
 
         logging.info(f"Starting web server on {host}:{port}")
-      self.app.run(
-    host=host, 
+     self.app.run(
+    host='0.0.0.0',  # Listen on all interfaces
     port=port, 
     debug=False, 
     threaded=True
