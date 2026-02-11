@@ -328,7 +328,7 @@
             <div class="status-dot" id="connection-dot"></div>
             <div>
                 <div id="connection-status-text">Connecting...</div>
-                <div class="connection-info" id="connection-info">Click to reconnect</div>
+                <div class="connection-info" id="connection-info"></div>
             </div>
         </div>
 
@@ -418,7 +418,7 @@
                 }
             }
             
-            // Strategy 3: Current host with default port 8080
+            // Strategy 3: Current host (fallback to document location)
             if (window.location.host) {
                 const currentHost = `${window.location.protocol}//${window.location.host}`;
                 if (!candidates.includes(currentHost)) {
