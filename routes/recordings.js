@@ -13,10 +13,14 @@ const fileFilter = (req, file, cb) => {
     ? process.env.ALLOWED_MIME_TYPES.split(',')
     : ['video/mp4', 'video/webm', 'image/jpeg', 'image/png', 'image/jpg'];
 
+  console.log(`File filter - Received MIME type: ${file.mimetype}, Original name: ${file.originalname}`);
+  
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error(`Invalid file type. Allowed types: ${allowedMimeTypes.join(', ')}`), false);
+    const errorMsg = `Invalid file type. Received: ${file.mimetype}. Allowed types: ${allowedMimeTypes.join(', ')}`;
+    console.error(errorMsg);
+    cb(new Error(errorMsg), false);
   }
 };
 
