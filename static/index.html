@@ -94,6 +94,50 @@
             margin-top: 2px;
         }
 
+        .backend-input-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .backend-input-section h3 {
+            font-size: 1em;
+            margin-bottom: 10px;
+            color: #00d4ff;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .backend-input-section input {
+            flex: 1;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: #fff;
+            font-size: 0.95em;
+        }
+
+        .backend-input-section input:focus {
+            outline: none;
+            border-color: #00d4ff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .backend-input-section input::placeholder {
+            color: #666;
+        }
+
+        .backend-input-section button {
+            padding: 10px 30px;
+            width: auto;
+        }
+
         .main-content {
             display: grid;
             grid-template-columns: 1fr 350px;
@@ -332,6 +376,15 @@
             </div>
         </div>
 
+        <!-- Backend URL Input -->
+        <div class="backend-input-section">
+            <h3>Custom Backend URL</h3>
+            <div class="input-group">
+                <input type="text" id="backend-url-input" placeholder="https://your-ngrok-url.ngrok-free.app" />
+                <button onclick="saveAndConnect()">Connect</button>
+            </div>
+        </div>
+
         <div class="main-content">
             <div class="stream-section">
                 <div class="stream-container">
@@ -407,18 +460,34 @@
             // Try multiple detection strategies in order
             const candidates = [];
             
-            // Strategy 1: localhost (for local development)
-            candidates.push('http://localhost:8080');
+            // Strategy 1: URL query parameter ?backend=
+            const urlParams = new URLSearchParams(window.location.search);
+            const backendParam = urlParams.get('backend');
+            if (backendParam) {
+                candidates.push(backendParam);
+            }
             
-            // Strategy 2: Same origin (if hosted on the same server)
+            // Strategy 2: Saved URL from localStorage
+            const savedUrl = localStorage.getItem('backendUrl');
+            if (savedUrl && !candidates.includes(savedUrl)) {
+                candidates.push(savedUrl);
+            }
+            
+            // Strategy 3: localhost (for local development)
+            const localhostUrl = 'http://localhost:8080';
+            if (!candidates.includes(localhostUrl)) {
+                candidates.push(localhostUrl);
+            }
+            
+            // Strategy 4: Same origin (if hosted on the same server)
             if (window.location.protocol && window.location.hostname) {
                 const sameOrigin = `${window.location.protocol}//${window.location.hostname}:8080`;
-                if (sameOrigin !== candidates[0]) {
+                if (!candidates.includes(sameOrigin)) {
                     candidates.push(sameOrigin);
                 }
             }
             
-            // Strategy 3: Current host (fallback to document location)
+            // Strategy 5: Current host (fallback to document location)
             if (window.location.host) {
                 const currentHost = `${window.location.protocol}//${window.location.host}`;
                 if (!candidates.includes(currentHost)) {
@@ -429,8 +498,60 @@
             return candidates;
         }
 
+        // Validate backend URL
+        function validateBackendUrl(url) {
+            try {
+                const parsed = new URL(url);
+                
+                // Allow http only for localhost, otherwise require https
+                if (parsed.protocol === 'http:') {
+                    if (!parsed.hostname.match(/^(localhost|127\.0\.0\.1|::1)$/)) {
+                        return { valid: false, error: 'Only HTTPS is allowed for remote servers. Use HTTP only for localhost.' };
+                    }
+                } else if (parsed.protocol !== 'https:') {
+                    return { valid: false, error: 'URL must use HTTP or HTTPS protocol.' };
+                }
+                
+                return { valid: true };
+            } catch (e) {
+                return { valid: false, error: 'Invalid URL format. Please enter a valid URL (e.g., https://your-server.com)' };
+            }
+        }
+
+        // Save backend URL and connect
+        function saveAndConnect() {
+            const input = document.getElementById('backend-url-input');
+            const url = input.value.trim();
+            
+            if (!url) {
+                alert('Please enter a backend URL');
+                return;
+            }
+            
+            // Validate URL
+            const validation = validateBackendUrl(url);
+            if (!validation.valid) {
+                alert(validation.error);
+                return;
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('backendUrl', url);
+            
+            // Set as backend URL and connect
+            backendUrl = url;
+            reconnectAttempts = 0;
+            connectToBackend();
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            // Pre-populate backend URL input from localStorage
+            const savedUrl = localStorage.getItem('backendUrl');
+            if (savedUrl) {
+                document.getElementById('backend-url-input').value = savedUrl;
+            }
+            
             // Start auto-connection on page load
             autoDetectAndConnect();
 

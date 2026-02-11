@@ -22,9 +22,9 @@ class WebServer:
             r"/*": {
                 "origins": [
                     "https://kadelj61-oss.github.io",
-                    "http://localhost:*",
-                    "https://*.ngrok.io",
-                    "https://*.ngrok-free.app"
+                    r"http://localhost:\d+",
+                    r"https://.*\.ngrok\.io",
+                    r"https://.*\.ngrok-free\.app"
                 ],
                 "methods": ["GET", "POST", "OPTIONS"],
                 "allow_headers": ["Content-Type"]
@@ -96,12 +96,12 @@ class WebServer:
         port = self.config['streaming']['port']
 
         logging.info(f"Starting web server on {host}:{port}")
-     self.app.run(
-    host='0.0.0.0',  # Listen on all interfaces
-    port=port, 
-    debug=False, 
-    threaded=True
-)
+        self.app.run(
+            host=host,
+            port=port,
+            debug=False,
+            threaded=True
+        )
 
 
 
