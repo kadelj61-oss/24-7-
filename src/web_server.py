@@ -10,6 +10,9 @@ from werkzeug.utils import secure_filename
 
 
 class WebServer:
+    # Allowed file types for uploads
+    ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'video/mp4', 'video/webm']
+    
     def __init__(self, config, stream_queues):
         self.config = config
         self.stream_queues = stream_queues
@@ -48,7 +51,7 @@ class WebServer:
             bucket = storage_client.bucket(self.gcs_bucket_name)
             
             # Create blob with timestamp
-            timestamp = int(datetime.datetime.now().timestamp() * 1000)
+            timestamp = int(datetime.datetime.now(datetime.timezone.utc).timestamp() * 1000)
             blob_name = f"recordings/{timestamp}-{filename}"
             blob = bucket.blob(blob_name)
             
@@ -122,11 +125,10 @@ class WebServer:
                     return jsonify({'success': False, 'error': 'No file selected'}), 400
                 
                 # Validate file type
-                allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'video/mp4', 'video/webm']
-                if file.content_type not in allowed_types:
+                if file.content_type not in self.ALLOWED_MIME_TYPES:
                     return jsonify({
                         'success': False, 
-                        'error': f'Invalid file type: {file.content_type}. Allowed: {", ".join(allowed_types)}'
+                        'error': f'Invalid file type: {file.content_type}. Allowed: {", ".join(self.ALLOWED_MIME_TYPES)}'
                     }), 400
                 
                 # Read file content
@@ -143,14 +145,14 @@ class WebServer:
                             'url': result['url'],
                             'size': result['size'],
                             'mimetype': result['mimetype'],
-                            'uploadedAt': datetime.datetime.now().isoformat()
+                            'uploadedAt': datetime.datetime.now(datetime.timezone.utc).isoformat()
                         }
                     }), 201
                 else:
                     # Fallback: save locally if GCS not configured
                     upload_folder = 'recordings'
                     os.makedirs(upload_folder, exist_ok=True)
-                    timestamp = int(datetime.datetime.now().timestamp() * 1000)
+                    timestamp = int(datetime.datetime.now(datetime.timezone.utc).timestamp() * 1000)
                     filename = f"{timestamp}-{secure_filename(file.filename)}"
                     filepath = os.path.join(upload_folder, filename)
                     
@@ -165,7 +167,7 @@ class WebServer:
                             'url': f'/recordings/{filename}',
                             'size': len(file_content),
                             'mimetype': file.content_type,
-                            'uploadedAt': datetime.datetime.now().isoformat()
+                            'uploadedAt': datetime.datetime.now(datetime.timezone.utc).isoformat()
                         }
                     }), 201
                     
