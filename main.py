@@ -16,7 +16,7 @@ def main():
         # Override port with Railway environment variable if set
         port = int(os.getenv('PORT', config['streaming']['port']))
         config['streaming']['port'] = port
-        
+
         # Setup logging before creating manager
         logging.basicConfig(
             level=logging.INFO,
