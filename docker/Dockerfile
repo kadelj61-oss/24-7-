@@ -2,7 +2,7 @@ FROM python:3.10-slim
 
 # Install all OpenCV dependencies
 RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
+    libgl1 \
     libxcb1 \
     libx11-6 \
     libxext6 \
