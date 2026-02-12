@@ -17,14 +17,14 @@ buffer_lock = Lock()
 def upload_frame(quality):
     if quality not in frame_buffers:
         return jsonify({'error': 'Invalid quality'}), 400
-    
+
     frame_data = request.data
     if not frame_data:
         return jsonify({'error': 'No frame data'}), 400
-    
+
     with buffer_lock:
         frame_buffers[quality].append(frame_data)
-    
+
     print(f"Received frame for {quality}, buffer size: {len(frame_buffers[quality])}")
     return jsonify({'status': 'ok', 'buffer_size': len(frame_buffers[quality])}), 200
 
@@ -32,7 +32,7 @@ def upload_frame(quality):
 def stream(quality):
     if quality not in frame_buffers:
         return "Invalid quality", 404
-    
+
     def generate():
         while True:
             with buffer_lock:
@@ -62,4 +62,4 @@ def health():
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 8080))
     print(f"Starting Railway server on port {port}")
-    app.run(host='0.0.0.0', port=port, threaded=True)
+    app.run(host='0.0.0.0', port=port, threaded=True, debug=False)
