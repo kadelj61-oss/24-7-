@@ -1,1 +1,1 @@
-web: python app_combined.py
+web: gunicorn --bind 0.0.0.0:$PORT app:app
