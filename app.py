@@ -1,68 +1,98 @@
-from flask import Flask, Response
-import io
-import time
-from PIL import Image, ImageDraw
+from flask import Flask, Response, jsonify
+import cv2
 import threading
+import time
+from collections import deque
 
 app = Flask(__name__)
 
-# Fake camera buffer
-camera_buffer = bytearray(3 * 1920 * 1080)  # RGB buffer
-buffer_lock = threading.Lock()
+# Config
+CAMERA_ID = 0
+frame_buffer = deque(maxlen=30)
 buffer_fill = 0
+camera_lock = threading.Lock()
 
-def fake_camera_thread():
-    """Simulate camera filling buffer"""
+def capture_thread():
+    """Capture frames from camera"""
     global buffer_fill
+    cap = cv2.VideoCapture(CAMERA_ID)
+    
+    if not cap.isOpened():
+        print("❌ Camera not found!")
+        return
+    
+    print("✅ Camera opened")
+    
     while True:
-        with buffer_lock:
-            # Simulate slow buffer fill (1% per second)
-            if buffer_fill < 100:
-                buffer_fill += 1
-        time.sleep(1)
+        ret, frame = cap.read()
+        if ret:
+            with camera_lock:
+                frame_buffer.append(frame)
+                buffer_fill = min(100, (len(frame_buffer) / 30.0) * 100)
+        time.sleep(0.033)
 
-# Start fake camera thread
-camera_thread = threading.Thread(target=fake_camera_thread, daemon=True)
-camera_thread.start()
+def stream_generator():
+    """Generate MJPEG stream"""
+    while True:
+        with camera_lock:
+            if len(frame_buffer) == 0:
+                time.sleep(0.1)
+                continue
+            frame = frame_buffer[-1].copy()
+        
+        # Resize
+        frame = cv2.resize(frame, (1280, 720))
+        
+        # Encode
+        success, buffer = cv2.imencode('.jpg', frame)
+        if not success:
+            continue
+        
+        frame_data = buffer.tobytes()
+        
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n'
+               b'Content-Length: ' + str(len(frame_data)).encode() + b'\r\n\r\n' +
+               frame_data + b'\r\n')
 
 @app.route('/')
 def index():
-    """Web UI"""
     return """
     <!DOCTYPE html>
     <html>
-    <head>
-        <title>24-7 Camera Stream</title>
-        <style>
-            body { font-family: Arial; text-align: center; margin-top: 50px; }
-            .buffer { width: 300px; height: 30px; border: 2px solid #ccc; margin: 20px auto; }
-            .fill { height: 100%; background: #4CAF50; width: 0%; transition: width 0.3s; }
-            h1 { color: #333; }
-        </style>
-    </head>
-    <body>
-        <h1>📺 24-7 Camera Stream</h1>
-        <h2 id="buffer">Buffer: 0%</h2>
-        <div class="buffer">
-            <div class="fill" id="fill"></div>
+    <body style="text-align: center; font-family: Arial; background: #f5f5f5; margin: 0; padding: 20px;">
+        <div style="max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px;">
+            <h1>📺 24-7 Camera Stream</h1>
+            <img src="/video" style="max-width: 100%; border: 2px solid #ddd; border-radius: 4px;">
+            <p>Buffer: <span id="buf">0%</span> | Status: <span id="stat">Connecting...</span></p>
+            <script>
+                setInterval(() => {
+                    fetch('/api/status').then(r => r.json()).then(d => {
+                        document.getElementById('buf').textContent = d.buffer.toFixed(1) + '%';
+                        document.getElementById('stat').textContent = d.connected ? '✅ Connected' : '❌ Disconnected';
+                    });
+                }, 1000);
+            </script>
         </div>
-        <script>
-            setInterval(() => {
-                fetch('/status/hd').then(r => r.json()).then(data => {
-                    document.getElementById('buffer').textContent = `Buffer: ${data.buffer_fill}%`;
-                    document.getElementById('fill').style.width = data.buffer_fill + '%';
-                });
-            }, 1000);
-        </script>
     </body>
     </html>
     """
 
-@app.route('/status/<quality>')
-def status(quality):
-    """Return camera status"""
-    with buffer_lock:
-        return {"buffer_fill": buffer_fill}
+@app.route('/video')
+def video():
+    return Response(stream_generator(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/api/status')
+def api_status():
+    return jsonify({
+        'buffer': buffer_fill,
+        'connected': len(frame_buffer) > 0
+    })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    print("🎥 Starting camera capture...")
+    t = threading.Thread(target=capture_thread, daemon=True)
+    t.start()
+    
+    print("🌐 Open: http://localhost:8080")
+    app.run(host='0.0.0.0', port=8080, debug=False)
