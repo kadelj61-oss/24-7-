@@ -7,12 +7,14 @@ app = Flask(__name__)
 
 # Fake camera frame generator for testing
 def fake_camera_stream():
+    buffer = io.BytesIO()
     while True:
         # Create a fake frame (e.g. random noise)
         frame = np.random.randint(0, 255, (480, 640, 3), dtype=np.uint8)
         # Convert to PIL Image and encode to JPEG
         img = Image.fromarray(frame, 'RGB')
-        buffer = io.BytesIO()
+        buffer.seek(0)
+        buffer.truncate()
         img.save(buffer, format='JPEG')
         frame_bytes = buffer.getvalue()
         yield (b'--frame\r\n'
