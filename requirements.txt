@@ -25,3 +25,5 @@ av>=10.0.0
 # Optional: For testing
 pytest>=7.4.0
 pytest-cov>=4.1.0
+
+Add-Content -Path requirements.txt -Value "gunicorn"
