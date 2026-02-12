@@ -1,1 +1,1 @@
-web: gunicorn --bind 0.0.0.0:$PORT --workers 1 railway_server:app
+web: gunicorn --bind 0.0.0.0:$PORT railway_server:app
