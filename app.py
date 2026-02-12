@@ -1,17 +1,24 @@
 from flask import Flask, Response, render_template
-import cv2
+from PIL import Image
 import numpy as np
+import io
 
 app = Flask(__name__)
 
 # Fake camera frame generator for testing
 def fake_camera_stream():
+    buffer = io.BytesIO()
     while True:
         # Create a fake frame (e.g. random noise)
         frame = np.random.randint(0, 255, (480, 640, 3), dtype=np.uint8)
-        frame = cv2.imencode('.jpg', frame)[1].tobytes()  # Convert to JPEG
+        # Convert to PIL Image and encode to JPEG
+        img = Image.fromarray(frame, 'RGB')
+        buffer.seek(0)
+        buffer.truncate()
+        img.save(buffer, format='JPEG', quality=85)
+        frame_bytes = buffer.getvalue()
         yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
 @app.route('/')
 def index():
