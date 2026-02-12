@@ -34,12 +34,15 @@ def stream(quality):
         return "Invalid quality", 404
 
     def generate():
+        last_frame = None
         while True:
             with buffer_lock:
                 if frame_buffers[quality]:
-                    frame = frame_buffers[quality][-1]
-                    yield (b'--frame\r\n'
-                           b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                    last_frame = frame_buffers[quality][-1]
+            
+            if last_frame:
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + last_frame + b'\r\n')
             time.sleep(0.033)
 
     return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
@@ -48,12 +51,29 @@ def stream(quality):
 def index():
     return """
     <html>
+    <head>
+        <title>24/7 Camera Stream</title>
+    </head>
     <body>
     <h1>24/7 Camera Stream</h1>
-    <img src="/stream/hd" width="1280" style="border: 1px solid #ccc;">
+    <p>Buffer size: <span id="buffer"></span></p>
+    <img src="/stream/hd" width="1280" alt="Stream">
+    <script>
+        setInterval(function() {
+            fetch('/status/hd').then(r => r.json()).then(d => {
+                document.getElementById('buffer').textContent = d.buffer_size;
+            });
+        }, 1000);
+    </script>
     </body>
     </html>
     """
+
+@app.route('/status/<quality>')
+def status(quality):
+    with buffer_lock:
+        size = len(frame_buffers[quality])
+    return jsonify({'buffer_size': size})
 
 @app.route('/health')
 def health():
