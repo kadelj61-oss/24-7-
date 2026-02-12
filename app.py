@@ -15,7 +15,7 @@ def fake_camera_stream():
         img = Image.fromarray(frame, 'RGB')
         buffer.seek(0)
         buffer.truncate()
-        img.save(buffer, format='JPEG')
+        img.save(buffer, format='JPEG', quality=85)
         frame_bytes = buffer.getvalue()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
