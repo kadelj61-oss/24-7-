@@ -1,1 +1,1 @@
-web: gunicorn --bind 0.0.0.0:$PORT railway_server:app
+web: python app_combined.py
