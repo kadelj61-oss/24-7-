@@ -50,7 +50,7 @@ def index():
     <html>
     <body>
     <h1>24/7 Camera Stream</h1>
-    <img src="/stream/hd" width="1280">
+    <img src="/stream/hd" width="1280" style="border: 1px solid #ccc;">
     </body>
     </html>
     """
