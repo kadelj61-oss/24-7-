@@ -3,4 +3,4 @@ builder = "dockerfile"
 dockerfilePath = "docker/Dockerfile"
 
 [deploy]
-startCommand = "python railway_server.py"
+startCommand = "gunicorn --bind 0.0.0.0:$PORT app:app"
