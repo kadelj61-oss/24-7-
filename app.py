@@ -3,6 +3,7 @@ import cv2
 import threading
 import time
 from collections import deque
+import os
 
 app = Flask(__name__)
 
@@ -93,6 +94,7 @@ if __name__ == '__main__':
     print("🎥 Starting camera or stream capture...")
     t = threading.Thread(target=capture_thread, daemon=True)
     t.start()
-    
-    print("🌐 Open: http://localhost:8080")
-    app.run(host='0.0.0.0', port=8080, debug=False)
+
+    port = int(os.environ.get('PORT', 8080))  # <-- port from Railway or 8080 by default
+    print(f"🌐 Open: http://localhost:{port}")
+    app.run(host='0.0.0.0', port=port, debug=False)
