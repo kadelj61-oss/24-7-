@@ -1,4 +1,3 @@
-
 from flask import Flask, Response, jsonify
 import cv2
 import threading
@@ -8,21 +7,21 @@ from collections import deque
 app = Flask(__name__)
 
 # Config
-CAMERA_ID = 0
+CAMERA_ID = "http://192.168.1.72:8080/video"  # << Use your MJPEG stream here!
 frame_buffer = deque(maxlen=30)
 buffer_fill = 0
 camera_lock = threading.Lock()
 
 def capture_thread():
-    """Capture frames from camera"""
+    """Capture frames from camera or network stream"""
     global buffer_fill
     cap = cv2.VideoCapture(CAMERA_ID)
     
     if not cap.isOpened():
-        print("❌ Camera not found!")
+        print("❌ Camera or stream not found!")
         return
     
-    print("✅ Camera opened")
+    print("✅ Camera or stream opened")
     
     while True:
         ret, frame = cap.read()
@@ -91,7 +90,7 @@ def api_status():
     })
 
 if __name__ == '__main__':
-    print("🎥 Starting camera capture...")
+    print("🎥 Starting camera or stream capture...")
     t = threading.Thread(target=capture_thread, daemon=True)
     t.start()
     
