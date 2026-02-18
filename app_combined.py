@@ -14,6 +14,8 @@ CORS(app, origins=[
 def home():
     return 'Flask server is running!', 200
 
+from flask import jsonify
+
 @app.route('/health')
 def health():
     return jsonify({"status": "OK"})
