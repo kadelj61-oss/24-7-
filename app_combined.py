@@ -8,6 +8,10 @@ CORS(app, origins=[
     "https://*.up.railway.app"
 ])
 
+@app.route('/')
+def home():
+    return 'Flask server is running!', 200
+
 @app.route('/health')
 def health():
     return 'OK', 200
@@ -23,5 +27,5 @@ def api_stats():
     })
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 8080))   # Railway sets PORT env var!
+    port = int(os.environ.get("PORT", 8080))
     app.run(host='0.0.0.0', port=port)
