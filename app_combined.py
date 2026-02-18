@@ -1,15 +1,12 @@
-from flask import Flask, jsonify, Response
+import os
+from flask import Flask, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app, origins=[
     "https://kadelj61-oss.github.io",
-    "https://*.ngrok-free.dev"
+    "https://*.up.railway.app"
 ])
-
-@app.route('/')
-def home():
-    return '<h1>Backend is running!</h1>'
 
 @app.route('/health')
 def health():
@@ -17,7 +14,6 @@ def health():
 
 @app.route('/api/stats')
 def api_stats():
-    # Demo values
     return jsonify({
         "status": "online",
         "resolution": "1920x1080",
@@ -27,4 +23,5 @@ def api_stats():
     })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    port = int(os.environ.get("PORT", 8080))   # Railway sets PORT env var!
+    app.run(host='0.0.0.0', port=port)
