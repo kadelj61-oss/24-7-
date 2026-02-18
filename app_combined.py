@@ -14,11 +14,10 @@ CORS(app, origins=[
 def home():
     return 'Flask server is running!', 200
 
-from flask import jsonify
-
 @app.route('/health')
 def health():
-    return jsonify({"status": "OK"})
+    from flask import jsonify
+    return jsonify({"status": "OK"}))
 
 @app.route('/api/stats')
 def api_stats():
