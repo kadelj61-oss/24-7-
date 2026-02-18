@@ -1,77 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Remote Camera Stream Viewer</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>body{font-family:sans-serif;margin:24px;background:#f9f9f9;color:#222}.container{max-width:700px;margin:auto;background:#fff;padding:2em;border-radius:12px;box-shadow:0 4px 20px #0001}label{display:block;margin-bottom:8px}input[type="text"],button{padding:8px 12px;font-size:1em}#streamBox{margin-top:2em;text-align:center}#remoteStream{max-width:100%;border:2px solid #333;border-radius:8px;min-height:320px;background:#111}#status,#stats{margin-top:1em;padding:8px;border-radius:4px}#status.error{background:#fdd;color:#a22}#status.success{background:#dfd;color:#283}#stats{background:#eef}</style>
+  <meta charset="UTF-8">
+  <title>Live Remote Webcam Stream | 24/7 Cams</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta property="og:title" content="Live Remote Webcam Stream">
+  <meta property="og:description" content="Watch the live feed from my remote camera, streamed in real-time!">
+  <meta property="og:image" content="https://kadelj61-oss.github.io/24-7-/favicon.png">
+  <meta name="theme-color" content="#6bbefc">
+  <link rel="icon" href="https://kadelj61-oss.github.io/24-7-/favicon.png"/>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      background: linear-gradient(135deg, #22293f 0%, #6bbefc 100%);
+      color: #eee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    main {
+      background: rgba(20, 25, 35, 0.97);
+      border-radius: 20px;
+      box-shadow: 0 8px 40px #111c;
+      max-width: 430px;
+      width: 95vw;
+      padding: 2.1em 2em 2em 2em;
+      position: relative;
+      text-align: center;
+      border: 1.5px solid #95d8f8;
+      backdrop-filter: blur(2px);
+      overflow: hidden;
+    }
+    h1 {
+      letter-spacing: 0.04em;
+      font-weight: 700;
+      font-size: 1.5em;
+      color: #6bbefc;
+      margin-top: 0;
+      margin-bottom: 0.65em;
+      text-shadow: 0 2px 12px #47b0dd38;
+    }
+    .desc {
+      color: #c9e8ff;
+      font-size: 1.01em;
+      margin: 0 0 1.2em 0;
+      opacity: .86;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+    }
+    .stream-box {
+      background: linear-gradient(135deg, #181d28 70%, #538fbe 100%);
+      border-radius: 16px;
+      border: 2.5px solid #417eaa;
+      padding: 1.3em 0.5em 1em 0.5em;
+      margin-bottom: 0.8em;
+      min-height: 372px;
+      position: relative;
+      box-shadow: 0 8px 30px #417eaa44;
+      transition: box-shadow 0.3s;
+      text-align: center;
+    }
+    #remoteStream {
+      display: block;
+      max-width: 100%;
+      min-height: 320px;
+      max-height: 360px;
+      margin: 0 auto;
+      border-radius: 9px;
+      box-shadow: 0 4px 24px #000a, 0 0 0 2.5px #8ad8ff33;
+      border: none;
+      background: #121825;
+      transition: filter 0.2s;
+    }
+    .source {
+      color: #88d2ff;
+      margin: 0.14em 0 1.4em 0;
+      font-size: 0.98em;
+      word-break: break-all;
+      font-family: 'Consolas','Fira Mono','Menlo',monospace;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .loading {
+      position: absolute;
+      left: 0; right: 0;
+      top: 40%; z-index: 2;
+      margin: 0 auto;
+      text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+      pointer-events: none;
+    }
+    .loading-ring {
+      width: 48px; height: 48px;
+      border: 5px solid #6bbefc77;
+      border-top: 5px solid #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .notice {
+      color: #ffefc9;
+      font-size: 0.98em;
+      margin-top: 0.7em;
+      background: #3a373a9a;
+      border-radius: 6px;
+      padding: 6px 12px 7px 12px;
+      opacity: .89;
+      display: inline-block;
+      box-shadow: 0 0px 10px #6bbefc33;
+    }
+    @media (max-width: 600px) {
+      main { padding:1em 0.2em 1.4em 0.2em; border-radius: 10px;}
+      .stream-box {min-height: 160px;}
+      #remoteStream {min-height:140px;}
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-    <h1>Remote Camera Stream Viewer</h1>
-    <label for="backendUrl">
-        Flask backend URL (no slash at end):<br>
-        <small>(e.g. <code>https://direction-may-banners-december.trycloudflare.com</code>)</small>
-    </label>
-    <input type="text" id="backendUrl" value="https://direction-may-banners-december.trycloudflare.com" style="width:85%">
-    <button id="connectBtn">Connect</button>
-    <div id="status"></div>
-    <div id="stats"></div>
-    <div id="streamBox">
-        <img id="remoteStream" alt="Remote camera stream appears here">
-        <div style="color:#888; margin-top:6px"><small>If the stream does not appear, check backend URL and open the tunnel!</small></div>
+<main>
+  <h1>
+    <span style="vertical-align: middle; margin-right:5px;">📡</span>
+    24/7 Remote Camera Stream
+  </h1>
+  <div class="desc">
+    Live stream from remote camera server.<br>
+    <a class="source" href="https://incorporated-further-pope-psychiatry.trycloudflare.com/stream" target="_blank" rel="noopener">
+      <span style="font-size:0.93em;">source: /stream</span>
+    </a>
+  </div>
+  <div class="stream-box" id="stream-container">
+    <div class="loading" id="loading-ind">
+      <div class="loading-ring"></div>
+      <div style="font-size:1.08em">Loading camera stream…</div>
     </div>
-</div>
-<script>
-const $ = id => document.getElementById(id);
-window.lastBackendUrl = "";
-function setStatus(msg, isError) {
-    $('status').textContent = msg;
-    $('status').className = isError ? 'error' : 'success';
-}
-function setStats(obj) {
-    if (!obj) { $('stats').textContent = ''; return; }
-    $('stats').textContent = Object.entries(obj).map(([k,v])=>`${k}: ${v}`).join(' • ');
-}
-$('connectBtn').onclick = async function() {
-    const url = $('backendUrl').value.replace(/\/$/, '');
-    window.lastBackendUrl = url;
-    setStatus('Connecting...', false);
-    setStats(null);
-    try {
-        const healthRes = await fetch(url+'/health');
-        if (!healthRes.ok) {
-            setStatus(`Health check failed: HTTP ${healthRes.status}`, true);
-            $('remoteStream').src = '';
-            return;
-        }
-        const health = await healthRes.json();
-        if (!(health.status && (health.status === "OK" || health.status === "ok"))) {
-            setStatus('Health check error: invalid status', true);
-            $('remoteStream').src = '';
-            return;
-        }
-        setStatus('Backend OK', false);
-    } catch (e) {
-        setStatus('Could not reach backend /health: ' + e.message, true);
-        $('remoteStream').src = '';
-        return;
-    }
-    try {
-        const statsRes = await fetch(url+'/api/stats');
-        if (statsRes.ok) {
-            const stats = await statsRes.json();
-            setStats(stats);
-        } else {
-            setStats(null);
-        }
-    } catch { setStats(null); }
-    $('remoteStream').src = url+'/stream';
-    $('remoteStream').alt = 'Connecting to stream...';
-};
-window.onload = () => {
-    $('connectBtn').click();
-};
-</script>
+    <img id="remoteStream" src="https://incorporated-further-pope-psychiatry.trycloudflare.com/stream" alt="Live stream loading…"
+         onload="document.getElementById('loading-ind').style.display='none';"
+         onerror="this.style.filter='blur(2px)';document.getElementById('loading-ind').innerHTML='<div style=\'color:#ffd7d7;background:#201515a3;padding:7px 13px;border-radius:6px;font-size:1.18em;margin-bottom:2px;\'>⚠️ Camera stream unavailable.</div><div class=notice>Check that your server and tunnel are online.<br>Refresh to retry.</div>';"/>
+  </div>
+  <div class="notice">
+    If the stream appears blurry or missing, check your server/tunnel and refresh.<br>
+    <b>Tip:</b> You can share this GitHub Pages link with anyone!
+  </div>
+  <footer style="font-size:0.9em; margin:1.2em 0 0 0; color:#99b">
+    Powered by Flask + Cloudflare Tunnel · Theme by Copilot
+  </footer>
+</main>
 </body>
 </html>
