@@ -55,14 +55,17 @@ def camera_thread():
     
     cap.release()
     
+from flask import jsonify
+
 @app.route('/api/stats')
 def api_stats():
+    # Dummy/example stats; adapt as needed for your real telemetry
     return jsonify({
         "status": "online",
         "resolution": "1920x1080",
         "fps": 30,
         "bitrate": "3Mbps",
-        "viewers": 1  # or some dynamic value
+        "viewers": 1
     })
     
 @app.route('/stream/<quality>')
