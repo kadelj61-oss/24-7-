@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app, origins=[
     "https://kadelj61-oss.github.io",
     "https://*.up.railway.app",
-    "https://further-rabbit-selective-entire.trycloudflare.com"
+    "https://direction-may-banners-december.trycloudflare.com"
 ])
 
 @app.route('/')
