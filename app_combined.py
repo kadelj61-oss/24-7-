@@ -6,7 +6,8 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, origins=[
     "https://kadelj61-oss.github.io",
-    "https://*.up.railway.app"
+    "https://*.up.railway.app",
+    "https://further-rabbit-selective-entire.trycloudflare.com"
 ])
 
 @app.route('/')
@@ -15,7 +16,7 @@ def home():
 
 @app.route('/health')
 def health():
-    return 'OK', 200
+    return jsonify({"status": "OK"})
 
 @app.route('/api/stats')
 def api_stats():
@@ -26,8 +27,6 @@ def api_stats():
         "bitrate": "3Mbps",
         "viewers": 1
     })
-
-# ---- CAMERA STREAMING SECTION ----
 
 def gen_frames():
     cap = cv2.VideoCapture(0)
@@ -50,7 +49,6 @@ def stream():
     return Response(gen_frames(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-# Only needed for local development!
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8080))
     app.run(host='0.0.0.0', port=port)
