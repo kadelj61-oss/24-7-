@@ -54,7 +54,17 @@ def camera_thread():
         time.sleep(0.033)  # ~30fps
     
     cap.release()
-
+    
+@app.route('/api/stats')
+def api_stats():
+    return jsonify({
+        "status": "online",
+        "resolution": "1920x1080",
+        "fps": 30,
+        "bitrate": "3Mbps",
+        "viewers": 1  # or some dynamic value
+    })
+    
 @app.route('/stream/<quality>')
 def stream(quality):
     if quality not in frame_buffers:
