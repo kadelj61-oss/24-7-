@@ -2,841 +2,98 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>24/7 Live Camera Stream</title>
+    <title>Remote Camera Stream Viewer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #ffffff;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            padding: 30px 0;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #00d4ff, #0099ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .subtitle {
-            color: #888;
-            font-size: 1.1em;
-        }
-
-        .connection-status {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 15px 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .connection-status:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: #00d4ff;
-        }
-
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #888;
-        }
-
-        .status-dot.connected {
-            background: #00ff00;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-        }
-
-        .status-dot.connecting {
-            background: #ffaa00;
-            animation: pulse 1s infinite;
-        }
-
-        .status-dot.error {
-            background: #ff0000;
-        }
-
-        .status-dot.disconnected {
-            background: #888;
-        }
-
-        .connection-info {
-            font-size: 0.85em;
-            color: #888;
-            margin-top: 2px;
-        }
-
-        .backend-input-section {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .backend-input-section h3 {
-            font-size: 1em;
-            margin-bottom: 10px;
-            color: #00d4ff;
-        }
-
-        .input-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .backend-input-section input {
-            flex: 1;
-            padding: 10px 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-            color: #fff;
-            font-size: 0.95em;
-        }
-
-        .backend-input-section input:focus {
-            outline: none;
-            border-color: #00d4ff;
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .backend-input-section input::placeholder {
-            color: #666;
-        }
-
-        .backend-input-section button {
-            padding: 10px 30px;
-            width: auto;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stream-section {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .stream-container {
-            position: relative;
-            background: #000;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 3px solid #00d4ff;
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4), 0 10px 40px rgba(0, 0, 0, 0.5);
-        }
-
-        #stream {
-            width: 100%;
-            height: auto;
-            display: block;
-            min-height: 400px;
-        }
-
-        .stream-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 15px;
-            background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .live-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 0, 0, 0.2);
-            padding: 5px 15px;
-            border-radius: 20px;
-            border: 1px solid #ff0000;
-        }
-
-        .live-dot {
-            width: 10px;
-            height: 10px;
-            background: #ff0000;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        .quality-selector {
-            display: flex;
-            gap: 10px;
-        }
-
-        .quality-btn {
-            padding: 8px 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #fff;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9em;
-        }
-
-        .quality-btn:hover,
-        .quality-btn.active {
-            background: rgba(0, 212, 255, 0.3);
-            border-color: #00d4ff;
-        }
-
-        .sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .stats-panel {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .stat-item {
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .stat-item:last-child {
-            margin-bottom: 0;
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-
-        .stat-label {
-            font-size: 0.9em;
-            color: #888;
-            margin-bottom: 5px;
-        }
-
-        .stat-value {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #00d4ff;
-        }
-
-        .stat-value.offline {
-            color: #666;
-        }
-
-        .live-indicator.offline {
-            background: rgba(128, 128, 128, 0.2);
-            border-color: #888;
-        }
-
-        .live-indicator.offline .live-dot {
-            background: #888;
-            animation: none;
-        }
-
-        .controls-panel {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .control-group {
-            margin-bottom: 20px;
-        }
-
-        .control-label {
-            display: block;
-            margin-bottom: 10px;
-            font-size: 0.95em;
-            color: #ddd;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(45deg, #00d4ff, #0099ff);
-            border: none;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .status {
-            padding: 15px;
-            background: rgba(0, 212, 255, 0.1);
-            border-left: 4px solid #00d4ff;
-            border-radius: 5px;
-            margin-top: 15px;
-            display: none;
-        }
-
-        .status.success {
-            background: rgba(0, 255, 0, 0.1);
-            border-left-color: #00ff00;
-            display: block;
-        }
-
-        .status.error {
-            background: rgba(255, 0, 0, 0.1);
-            border-left-color: #ff0000;
-            display: block;
-        }
-
-        footer {
-            text-align: center;
-            padding: 20px;
-            border-top: 2px solid rgba(255, 255, 255, 0.1);
-            color: #888;
-            margin-top: 30px;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-
-            h1 {
-                font-size: 1.8em;
-            }
-
-            #stream {
-                min-height: 300px;
-            }
-        }
+        body { font-family: Arial, sans-serif; margin: 24px; background: #f9f9f9; color: #222; }
+        .container { max-width: 700px; margin: auto; background: #fff; padding:2em; border-radius: 12px; box-shadow: 0 4px 20px #0001; }
+        label { display: block; margin-bottom: 8px; }
+        input[type="text"], button { padding: 8px 12px; font-size: 1em; }
+        #streamBox { margin-top: 2em; text-align: center; }
+        #remoteStream { max-width: 100%; border: 2px solid #333; border-radius: 8px; min-height: 320px; background: #111; }
+        #status, #stats { margin-top: 1em; padding:8px; border-radius:4px; }
+        #status.error { background: #fdd; color: #a22; }
+        #status.success { background: #dfd; color: #283; }
+        #stats { background: #eef; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>24/7 Live Camera Stream</h1>
-            <p class="subtitle">Raspberry Pi USB Camera Streaming</p>
-        </header>
-
-        <!-- Connection Status -->
-        <div class="connection-status" id="connection-status" onclick="manualReconnect()">
-            <div class="status-dot" id="connection-dot"></div>
-            <div>
-                <div id="connection-status-text">Connecting...</div>
-                <div class="connection-info" id="connection-info"></div>
-            </div>
-        </div>
-
-        <!-- Backend URL Input -->
-        <div class="backend-input-section">
-            <h3>Custom Backend URL</h3>
-            <div class="input-group">
-                <input type="text" id="backend-url-input" placeholder="https://your-ngrok-url.ngrok-free.app" />
-                <button onclick="saveAndConnect()">Connect</button>
-            </div>
-        </div>
-
-        <div class="main-content">
-            <div class="stream-section">
-                <div class="stream-container">
-                    <img id="stream" src="" alt="Live camera stream" style="display: none;">
-                    <div class="stream-overlay">
-                        <div class="live-indicator">
-                            <span class="live-dot"></span>
-                            <span>LIVE</span>
-                        </div>
-                        <div class="quality-selector">
-                            <button class="quality-btn active" data-quality="hd">HD</button>
-                            <button class="quality-btn" data-quality="sd">SD</button>
-                            <button class="quality-btn" data-quality="uhd">UHD</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="sidebar">
-                <div class="stats-panel">
-                    <h3>Stream Stats</h3>
-                    <div class="stat-item">
-                        <div class="stat-label">Status</div>
-                        <div class="stat-value" id="status">ONLINE</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Resolution</div>
-                        <div class="stat-value" id="resolution">1920x1080</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">FPS</div>
-                        <div class="stat-value" id="fps">30</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Bitrate</div>
-                        <div class="stat-value" id="bitrate">5 Mbps</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Viewers</div>
-                        <div class="stat-value" id="viewers">0</div>
-                    </div>
-                </div>
-
-                <div class="controls-panel">
-                    <h3>Controls</h3>
-                    <div class="control-group">
-                        <button onclick="takeSnapshot()">Capture Snapshot</button>
-                    </div>
-                    <div class="control-group">
-                        <button onclick="toggleRecording()">Start Recording</button>
-                    </div>
-                    <div id="recording-status" class="status"></div>
-                </div>
-            </div>
-        </div>
-
-        <footer>
-            <p>&copy; 2026 24/7 Camera Streaming. All rights reserved.</p>
-        </footer>
+<div class="container">
+    <h1>Remote Camera Stream Viewer</h1>
+    <label for="backendUrl">
+        Flask backend URL (no slash at end):<br>
+        <small>(e.g. <code>https://direction-may-banners-december.trycloudflare.com</code>)</small>
+    </label>
+    <input type="text" id="backendUrl" value="https://direction-may-banners-december.trycloudflare.com" style="width:85%">
+    <button id="connectBtn">Connect</button>
+    
+    <div id="status"></div>
+    <div id="stats"></div>
+    
+    <div id="streamBox">
+        <img id="remoteStream" alt="Remote camera stream appears here">
+        <div style="color:#888; margin-top:6px"><small>If the stream does not appear, check backend URL and open the tunnel!</small></div>
     </div>
+</div>
 
-    <script>
-        // State management
-        let backendUrl = '';
-        let statsInterval = null;
-        let healthCheckInterval = null;
-        let reconnectAttempts = 0;
-        const MAX_RECONNECT_ATTEMPTS = 5;
-        let currentQuality = 'hd';
+<script>
+const $ = id => document.getElementById(id);
+let lastBackendUrl = "";
 
-        // Backend URL detection
-        function detectBackendUrl() {
-            // Try multiple detection strategies in order
-            const candidates = [];
-            
-            // Strategy 1: URL query parameter ?backend=
-            const urlParams = new URLSearchParams(window.location.search);
-            const backendParam = urlParams.get('backend');
-            if (backendParam) {
-                candidates.push(backendParam);
-            }
-            
-            // Strategy 2: Saved URL from localStorage
-            const savedUrl = localStorage.getItem('backendUrl');
-            if (savedUrl && !candidates.includes(savedUrl)) {
-                candidates.push(savedUrl);
-            }
-            
-            // Strategy 3: localhost (for local development)
-            const localhostUrl = 'http://localhost:8080';
-            if (!candidates.includes(localhostUrl)) {
-                candidates.push(localhostUrl);
-            }
-            
-            // Strategy 4: Same origin (if hosted on the same server)
-            if (window.location.protocol && window.location.hostname) {
-                const sameOrigin = `${window.location.protocol}//${window.location.hostname}:8080`;
-                if (!candidates.includes(sameOrigin)) {
-                    candidates.push(sameOrigin);
-                }
-            }
-            
-            // Strategy 5: Current host (fallback to document location)
-            if (window.location.host) {
-                const currentHost = `${window.location.protocol}//${window.location.host}`;
-                if (!candidates.includes(currentHost)) {
-                    candidates.push(currentHost);
-                }
-            }
-            
-            return candidates;
+function setStatus(msg, isError) {
+    $('status').textContent = msg;
+    $('status').className = isError ? 'error' : 'success';
+}
+function setStats(obj) {
+    if (!obj) { $('stats').textContent = ''; return; }
+    $('stats').textContent = Object.entries(obj).map(([k,v])=>`${k}: ${v}`).join(' • ');
+}
+$('connectBtn').onclick = async function() {
+    const url = $('backendUrl').value.replace(/\/$/, '');
+    lastBackendUrl = url;
+    setStatus('Connecting...', false);
+    setStats(null);
+
+    // HEALTH CHECK
+    try {
+        const healthRes = await fetch(url+'/health');
+        if (!healthRes.ok) {
+            setStatus(`Health check failed: HTTP ${healthRes.status}`, true);
+            $('remoteStream').src = '';
+            return;
         }
-
-        // Validate backend URL
-        function validateBackendUrl(url) {
-            try {
-                const parsed = new URL(url);
-                
-                // Allow http only for localhost, otherwise require https
-                if (parsed.protocol === 'http:') {
-                    if (!parsed.hostname.match(/^(localhost|127\.0\.0\.1|::1)$/)) {
-                        return { valid: false, error: 'Only HTTPS is allowed for remote servers. Use HTTP only for localhost.' };
-                    }
-                } else if (parsed.protocol !== 'https:') {
-                    return { valid: false, error: 'URL must use HTTP or HTTPS protocol.' };
-                }
-                
-                return { valid: true };
-            } catch (e) {
-                return { valid: false, error: 'Invalid URL format. Please enter a valid URL (e.g., https://your-server.com)' };
-            }
+        const health = await healthRes.json();
+        if (!(health.status && (health.status === "OK" || health.status === "ok"))) {
+            setStatus('Health check error: invalid status', true);
+            $('remoteStream').src = '';
+            return;
         }
+        setStatus('Backend OK', false);
+    } catch (e) {
+        setStatus('Could not reach backend /health: ' + e.message, true);
+        $('remoteStream').src = '';
+        return;
+    }
 
-        // Save backend URL and connect
-        function saveAndConnect() {
-            const input = document.getElementById('backend-url-input');
-            const url = input.value.trim();
-            
-            if (!url) {
-                alert('Please enter a backend URL');
-                return;
-            }
-            
-            // Validate URL
-            const validation = validateBackendUrl(url);
-            if (!validation.valid) {
-                alert(validation.error);
-                return;
-            }
-            
-            // Save to localStorage
-            localStorage.setItem('backendUrl', url);
-            
-            // Set as backend URL and connect
-            backendUrl = url;
-            reconnectAttempts = 0;
-            connectToBackend();
+    // Get stats if available
+    try {
+        const statsRes = await fetch(url+'/api/stats');
+        if (statsRes.ok) {
+            const stats = await statsRes.json();
+            setStats(stats);
+        } else {
+            setStats(null);
         }
+    } catch { setStats(null); }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            // Pre-populate backend URL input from localStorage
-            const savedUrl = localStorage.getItem('backendUrl');
-            if (savedUrl) {
-                document.getElementById('backend-url-input').value = savedUrl;
-            }
-            
-            // Start auto-connection on page load
-            autoDetectAndConnect();
+    // Start Stream
+    $('remoteStream').src = url+'/stream';
+    $('remoteStream').alt = 'Connecting to stream...';
+};
 
-            // Quality selector
-            document.querySelectorAll('.quality-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    currentQuality = this.dataset.quality;
-                    
-                    // Update active button
-                    document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Change stream source if connected
-                    if (backendUrl) {
-                        updateStreamSource();
-                    }
-                });
-            });
-        });
-
-        // Auto-detect backend and connect
-        async function autoDetectAndConnect() {
-            const candidates = detectBackendUrl();
-            showConnectionStatus('connecting', `Auto-detecting backend...`, '');
-            
-            for (const url of candidates) {
-                try {
-                    console.log(`Trying backend URL: ${url}`);
-                    const healthResponse = await fetch(`${url}/health`, {
-                        method: 'GET',
-                        mode: 'cors'
-                    });
-                    
-                    if (healthResponse.ok) {
-                        const healthData = await healthResponse.json();
-                        if (healthData.status === 'ok') {
-                            backendUrl = url;
-                            console.log(`Connected to backend: ${url}`);
-                            await connectToBackend();
-                            return;
-                        }
-                    }
-                } catch (error) {
-                    console.log(`Failed to connect to ${url}:`, error.message);
-                }
-            }
-            
-            // All candidates failed
-            showConnectionStatus('error', 'Could not auto-detect backend', 'Click to retry');
-            setOfflineStats();
-        }
-
-        // Backend connection
-        async function connectToBackend() {
-            if (!backendUrl) {
-                showConnectionStatus('error', 'No backend URL available', 'Click to retry');
-                return;
-            }
-
-            showConnectionStatus('connecting', 'Connecting...', '');
-
-            try {
-                // Test health endpoint
-                const healthResponse = await fetch(`${backendUrl}/health`, {
-                    method: 'GET',
-                    mode: 'cors'
-                });
-                
-                if (!healthResponse.ok) {
-                    throw new Error('Health check failed');
-                }
-
-                const healthData = await healthResponse.json();
-                
-                if (healthData.status === 'ok') {
-                    // Connection successful
-                    showConnectionStatus('connected', 'Connected', backendUrl);
-                    updateLiveIndicator(true);
-                    reconnectAttempts = 0;
-
-                    // Load stream
-                    updateStreamSource();
-
-                    // Start stats updates
-                    startStatsUpdates();
-                    startHealthCheck();
-                } else {
-                    throw new Error('Backend returned invalid status');
-                }
-
-            } catch (error) {
-                console.error('Backend connection error:', error);
-                showConnectionStatus('error', 'Connection failed', 'Click to retry');
-                updateLiveIndicator(false);
-                setOfflineStats();
-                
-                // Try auto-reconnect
-                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-                    autoReconnect();
-                }
-            }
-        }
-
-        // Manual reconnect triggered by clicking on status
-        function manualReconnect() {
-            reconnectAttempts = 0;
-            backendUrl = ''; // Clear URL to force re-detection
-            autoDetectAndConnect();
-        }
-
-        function updateStreamSource() {
-            const streamImg = document.getElementById('stream');
-            streamImg.src = `${backendUrl}/stream/${currentQuality}?t=${Date.now()}`;
-            streamImg.style.display = 'block';
-        }
-
-        function startStatsUpdates() {
-            // Clear any existing interval
-            if (statsInterval) {
-                clearInterval(statsInterval);
-            }
-            
-            // Update immediately
-            fetchStats();
-            
-            // Then update every 2 seconds
-            statsInterval = setInterval(fetchStats, 2000);
-        }
-
-        function startHealthCheck() {
-            // Clear any existing interval
-            if (healthCheckInterval) {
-                clearInterval(healthCheckInterval);
-            }
-            
-            // Check health every 5 seconds
-            healthCheckInterval = setInterval(async () => {
-                if (!backendUrl) return;
-                
-                try {
-                    const response = await fetch(`${backendUrl}/health`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.status === 'ok') {
-                            showConnectionStatus('connected', 'Connected', backendUrl);
-                            updateLiveIndicator(true);
-                            reconnectAttempts = 0;
-                        } else {
-                            throw new Error('Invalid health status');
-                        }
-                    } else {
-                        throw new Error('Health check failed');
-                    }
-                } catch (error) {
-                    console.error('Health check failed:', error);
-                    showConnectionStatus('error', 'Connection lost', 'Reconnecting...');
-                    updateLiveIndicator(false);
-                    
-                    // Try auto-reconnect
-                    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-                        autoReconnect();
-                    }
-                }
-            }, 5000);
-        }
-
-        async function fetchStats() {
-            try {
-                const response = await fetch(`${backendUrl}/api/stats`);
-                const stats = await response.json();
-                
-                document.getElementById('status').textContent = 'ONLINE';
-                document.getElementById('status').classList.remove('offline');
-                document.getElementById('resolution').textContent = stats.resolution;
-                document.getElementById('resolution').classList.remove('offline');
-                document.getElementById('fps').textContent = stats.fps;
-                document.getElementById('fps').classList.remove('offline');
-                document.getElementById('bitrate').textContent = stats.bitrate + ' Mbps';
-                document.getElementById('bitrate').classList.remove('offline');
-                document.getElementById('viewers').textContent = stats.viewers;
-                document.getElementById('viewers').classList.remove('offline');
-                
-                updateLiveIndicator(true);
-                
-            } catch (error) {
-                console.error('Failed to fetch stats:', error);
-                setOfflineStats();
-            }
-        }
-
-        async function autoReconnect() {
-            if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-                showConnectionStatus('error', 'Failed to reconnect', 'Click to retry');
-                return;
-            }
-
-            reconnectAttempts++;
-            showConnectionStatus('connecting', `Reconnecting...`, `Attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`);
-            
-            const delay = 3000 * Math.pow(2, reconnectAttempts - 1); // Exponential backoff
-            
-            setTimeout(async () => {
-                try {
-                    const response = await fetch(`${backendUrl}/health`);
-                    if (response.ok) {
-                        // Reconnect successful
-                        await connectToBackend();
-                    } else {
-                        // Try again
-                        autoReconnect();
-                    }
-                } catch (error) {
-                    // Try again
-                    autoReconnect();
-                }
-            }, delay);
-        }
-
-        // UI Updates
-        function showConnectionStatus(status, message, info) {
-            const dot = document.getElementById('connection-dot');
-            const text = document.getElementById('connection-status-text');
-            const infoEl = document.getElementById('connection-info');
-            
-            dot.className = 'status-dot ' + status;
-            text.textContent = message;
-            infoEl.textContent = info;
-        }
-
-        function updateLiveIndicator(isLive) {
-            const liveIndicator = document.querySelector('.live-indicator');
-            const liveText = liveIndicator.querySelector('span:last-child');
-            
-            if (isLive) {
-                liveIndicator.classList.remove('offline');
-                liveText.textContent = 'LIVE';
-            } else {
-                liveIndicator.classList.add('offline');
-                liveText.textContent = 'OFFLINE';
-            }
-        }
-
-        function setOfflineStats() {
-            document.getElementById('status').textContent = 'OFFLINE';
-            document.getElementById('status').classList.add('offline');
-            document.getElementById('resolution').textContent = '--';
-            document.getElementById('resolution').classList.add('offline');
-            document.getElementById('fps').textContent = '--';
-            document.getElementById('fps').classList.add('offline');
-            document.getElementById('bitrate').textContent = '--';
-            document.getElementById('bitrate').classList.add('offline');
-            document.getElementById('viewers').textContent = '--';
-            document.getElementById('viewers').classList.add('offline');
-        }
-
-        // Controls
-        function takeSnapshot() {
-            console.log('Snapshot captured');
-            showStatus('Snapshot saved!', 'success');
-        }
-
-        function toggleRecording() {
-            const button = event.target;
-            const isRecording = button.textContent === 'Stop Recording';
-            
-            if (isRecording) {
-                button.textContent = 'Start Recording';
-                showStatus('Recording stopped', 'success');
-            } else {
-                button.textContent = 'Stop Recording';
-                showStatus('Recording started', 'success');
-            }
-        }
-
-        function showStatus(message, type) {
-            const statusEl = document.getElementById('recording-status');
-            statusEl.textContent = message;
-            statusEl.className = 'status ' + type;
-            
-            if (type === 'success') {
-                setTimeout(() => {
-                    statusEl.className = 'status';
-                }, 3000);
-            }
-        }
-    </script>
+window.onload = () => {
+    $('connectBtn').click();
+};
+</script>
 </body>
 </html>
