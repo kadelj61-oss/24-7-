@@ -6,6 +6,19 @@ from threading import Lock, Thread
 import cv2
 import logging
 
+from flask_cors import CORS
+
+app = Flask(__name__)
+
+# Add this after creating app
+CORS(app, origins=[
+    "https://kadelj61-oss.github.io",
+    "http://localhost:*",
+    "https://*.ngrok.io",
+    "https://*.ngrok-free.app",
+    "https://*.ngrok-free.dev"
+])
+
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
