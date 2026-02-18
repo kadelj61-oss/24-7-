@@ -7,18 +7,24 @@ import cv2
 import logging
 
 from flask_cors import CORS
-
-app = Flask(__name__)
-
-# Add this after creating app
 CORS(app, origins=[
     "https://kadelj61-oss.github.io",
-    "http://localhost:*",
-    "https://*.ngrok.io",
-    "https://*.ngrok-free.app",
     "https://*.ngrok-free.dev"
 ])
 
+from flask import jsonify
+
+@app.route('/api/stats')
+def api_stats():
+    # Temporary demo values, update with real values if you wish
+    return jsonify({
+        "status": "online",
+        "resolution": "1920x1080",
+        "fps": 30,
+        "bitrate": "3Mbps",
+        "viewers": 1
+    })
+    
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
