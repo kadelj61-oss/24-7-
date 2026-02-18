@@ -17,7 +17,7 @@ def home():
 @app.route('/health')
 def health():
     from flask import jsonify
-    return jsonify({"status": "OK"}))
+    return jsonify({"status": "OK"})
 
 @app.route('/api/stats')
 def api_stats():
